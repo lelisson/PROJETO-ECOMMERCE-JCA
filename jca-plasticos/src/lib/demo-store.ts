@@ -7,7 +7,7 @@ import { getOmieConfig } from "@/lib/omie";
 export const DEMO_PRODUCT_ID_BASE = 880_000;
 
 export function isDemoStore(): boolean {
-  return process.env.DEMO_LOJA === "true";
+  return process.env.DEMO_LOJA?.trim() === "true";
 }
 
 /**

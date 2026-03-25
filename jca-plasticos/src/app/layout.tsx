@@ -71,7 +71,7 @@ export default function RootLayout({
                 desligados neste endereço.
               </div>
             )}
-            {process.env.NEXT_PUBLIC_DEMO_LOJA === "true" && (
+            {process.env.NEXT_PUBLIC_DEMO_LOJA?.trim() === "true" && (
               <div className="bg-amber-400 py-1.5 text-center text-xs font-semibold text-amber-950">
                 Modo demonstração — estoque virtual e pagamento simulado
               </div>
