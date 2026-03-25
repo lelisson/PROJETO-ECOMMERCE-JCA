@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Pedido confirmado{% endblock %}
+{% block content %}
+<h1 class="section-title" style="font-size:1.5rem;color:var(--success);">Pedido registrado</h1>
+<div class="panel" style="max-width:640px;">
+  <p>Obrigado, <strong>{{ order.name }}</strong>. Seu pedido <strong>#{{ order.id }}</strong> foi salvo no sistema de vendas.</p>
+  <p><strong>Documento:</strong> {{ document_formatted }} ({{ 'CPF' if order.customer_type == 'pf' else 'CNPJ' }})</p>
+  <p><strong>Documento fiscal previsto:</strong> {{ fiscal_label }}</p>
+  <p class="fiscal-box">
+    <strong>Próximos passos (produção):</strong> conectar este pedido ao seu emissor fiscal (Bling, Omie, SAP, etc.) ou à API da SEFAZ com certificado digital A1.
+    Status atual no banco: <em>{{ order.fiscal_status }}</em> — após autorização, grave a chave de acesso e o XML no pedido.
+  </p>
+  <h2 style="font-size:1rem;">Itens</h2>
+  <ul>
+    {% for line in lines %}
+    <li>{{ line.product.name }} × {{ line.quantity }}</li>
+    {% endfor %}
+  </ul>
+  <p><strong>Total:</strong> R$ {{ "%.2f"|format(order.total_cents / 100) }}</p>
+  <p><a href="{{ url_for('store.products') }}">Continuar comprando</a></p>
+</div>
+{% endblock %}

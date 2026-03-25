@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Carrinho{% endblock %}
+{% block content %}
+<h1 class="section-title" style="font-size:1.5rem;">Carrinho de compras</h1>
+{% if lines %}
+<form method="post" action="{{ url_for('store.update_cart') }}">
+  <div class="panel" style="margin-bottom:1rem;">
+    <table class="cart">
+      <thead>
+        <tr><th>Produto</th><th>Preço</th><th>Qtd</th><th>Subtotal</th></tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td><a href="{{ url_for('store.product_detail', slug=line.product.slug) }}">{{ line.product.name }}</a></td>
+          <td>{{ line.product.price_brl() }}</td>
+          <td><input type="number" name="qty_{{ line.product.id }}" min="0" value="{{ line.quantity }}" style="width:4rem;"></td>
+          <td>R$ {{ "%.2f"|format(line.line_cents / 100) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary" style="margin-top:0.75rem;">Atualizar carrinho</button>
+  </div>
+</form>
+<div class="layout-split">
+  <div></div>
+  <div class="panel">
+    <div class="sum-line"><span>Subtotal</span><span>R$ {{ "%.2f"|format(subtotal_cents / 100) }}</span></div>
+    <div class="sum-line"><span>Frete</span><span>{% if shipping_cents == 0 %}Grátis{% else %}R$ {{ "%.2f"|format(shipping_cents / 100) }}{% endif %}</span></div>
+    {% if free_ship_remaining > 0 %}
+    <p style="font-size:0.85rem;color:var(--success);">Faltam R$ {{ "%.2f"|format(free_ship_remaining / 100) }} para frete grátis (pedidos acima de R$ 200).</p>
+    {% endif %}
+    <div class="sum-line sum-total"><span>Total</span><span>R$ {{ "%.2f"|format(total_cents / 100) }}</span></div>
+    <a href="{{ url_for('store.checkout') }}" class="btn btn-primary" style="display:block;text-align:center;margin-top:1rem;text-decoration:none;">Fechar pedido</a>
+  </div>
+</div>
+{% else %}
+<p>Seu carrinho está vazio. <a href="{{ url_for('store.products') }}">Ver produtos</a></p>
+{% endif %}
+{% endblock %}

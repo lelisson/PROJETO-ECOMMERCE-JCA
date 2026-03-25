@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}JCA Store{% endblock %} — Plásticos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/store.css') }}">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <span>Envio para todo o Brasil · {{ empresa_razao }}</span>
+      <span>CNPJ {{ empresa_cnpj }}</span>
+    </div>
+  </div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="{{ url_for('store.home') }}">JCA<span>Store</span></a>
+      <form class="search-form" action="{{ url_for('store.products') }}" method="get" role="search">
+        <input type="search" name="q" placeholder="Buscar fitas, filmes…" value="{{ request.args.get('q', '') }}" aria-label="Buscar">
+        <button type="submit">Buscar</button>
+      </form>
+      <nav class="nav-links">
+        <a href="{{ url_for('store.products') }}">Departamentos</a>
+        <a href="{{ url_for('store.cart') }}">Carrinho</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>Catálogo inspirado em</strong> <a href="https://jcaplasticos.com.br/produtos/" style="color:#febd69">jcaplasticos.com.br</a> — fitas e filmes plásticos industriais.</p>
+      <p>Fiscal: pessoa física → NFC-e (cupom eletrônico); pessoa jurídica → NF-e. A autorização junto à SEFAZ integra-se ao seu ERP/certificado A1.</p>
+    </div>
+  </footer>
+</body>
+</html>

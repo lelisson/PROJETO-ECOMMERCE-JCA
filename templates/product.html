@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<div class="layout-split">
+  <div class="panel">
+    <div class="card-img" style="height:240px;border-radius:8px;margin-bottom:1rem;">📦</div>
+    <p style="color:var(--muted);margin:0 0 0.5rem;">{{ product.category }}</p>
+    <h1 style="margin:0 0 0.75rem;font-size:1.5rem;">{{ product.name }}</h1>
+    <div class="price" style="font-size:1.5rem;margin-bottom:1rem;">{{ product.price_brl() }}</div>
+    <p>{{ product.long_desc or product.short_desc }}</p>
+  </div>
+  <div class="panel">
+    <h2>Comprar</h2>
+    <form action="{{ url_for('store.add_to_cart', product_id=product.id) }}" method="post">
+      <div class="form-row">
+        <label for="qty">Quantidade</label>
+        <input id="qty" name="qty" type="number" min="1" value="1" style="max-width:120px;">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Adicionar ao carrinho</button>
+    </form>
+    <p style="margin-top:1rem;font-size:0.85rem;"><a href="{{ url_for('store.products') }}">← Voltar à lista</a></p>
+  </div>
+</div>
+{% endblock %}

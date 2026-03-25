@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Início{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Tudo em plásticos para embalagem e indústria</h1>
+  <p>Fita de arquear, fita adesiva, filmes stretch, contrátil e embala tudo — com checkout que separa consumidor (NFC-e) e empresa (NF-e).</p>
+</section>
+<h2 class="section-title">Destaques</h2>
+<div class="grid">
+  {% for p in featured %}
+  <article class="card">
+    <div class="card-img" aria-hidden="true">📦</div>
+    <div class="card-body">
+      {% if loop.first %}<span class="badge">Mais vendido</span>{% endif %}
+      <h3 class="card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
+      <p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.5rem;">{{ p.short_desc[:80] }}{% if p.short_desc|length > 80 %}…{% endif %}</p>
+      <div class="price">{{ p.price_brl() }}</div>
+      <form action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
+        <input type="hidden" name="qty" value="1">
+        <button type="submit" class="btn btn-primary btn-cart">Adicionar ao carrinho</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+<p style="margin-top:1.5rem;"><a href="{{ url_for('store.products') }}">Ver todos os produtos →</a></p>
+{% endblock %}
