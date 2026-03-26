@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import product_image, amazon_stars, price_amazon %}
+{% from "_macros.html" import product_image, product_stock_badge, price_amazon %}
 {% block title %}Início{% endblock %}
 {% block content %}
 <section class="amz-hero">
@@ -27,13 +27,12 @@
                 {% elif loop.index == 2 %}
                 <span class="amz-badge amz-badge--prime">Envio JCA</span>
                 {% endif %}
-                {% set sn = 3 + (p.id % 3) %}
-                {{ amazon_stars(sn) }}
               </div>
               <h3 class="amz-card-title">
                 <a href="{{ url_for('store.product_detail', slug=p.slug) }}" itemprop="url"><span itemprop="name">{{ p.name }}</span></a>
               </h3>
               <p class="amz-card-cat amz-card-cat--placeholder" aria-hidden="true">&nbsp;</p>
+              {{ product_stock_badge(p) }}
               {{ price_amazon(p.price_cents, schema_offer=true) }}
               <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
                 <input type="hidden" name="qty" value="1">

@@ -19,6 +19,7 @@ class Product(db.Model):
     price_cents = db.Column(db.Integer, nullable=False)
     image_url = db.Column(db.String(500), default="")
     category = db.Column(db.String(80), default="")
+    stock_qty = db.Column(db.Integer, nullable=False, default=100)
     active = db.Column(db.Boolean, default=True, nullable=False)
 
     def price_brl(self) -> str:

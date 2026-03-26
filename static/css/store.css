@@ -649,7 +649,11 @@ a:hover {
   flex-direction: column;
   gap: 6px;
   flex-shrink: 0;
-  min-height: 52px;
+  min-height: 0;
+}
+
+.amz-card-lead:empty {
+  display: none;
 }
 
 .amz-badge {
@@ -660,37 +664,16 @@ a:hover {
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
 
 .amz-badge--prime {
   background: #007185;
 }
 
-.amz-stars {
-  font-size: 14px;
-  color: var(--amz-star);
-  margin-bottom: 4px;
-  line-height: 1;
-}
-
-.amz-star {
-  opacity: 0.35;
-}
-
-.amz-star--on {
-  opacity: 1;
-}
-
-.amz-stars-num {
-  color: var(--amz-link);
-  font-size: 12px;
-  margin-left: 4px;
-}
-
 .amz-card-title {
   margin: 0 0 6px;
-  font-size: 1.0625rem;
+  font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.45;
   letter-spacing: 0.01em;
@@ -699,6 +682,24 @@ a:hover {
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: calc(1.45em * 2);
+}
+
+.amz-card-stock {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--amz-text);
+}
+
+.amz-card-stock-label {
+  color: var(--amz-muted);
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.amz-card-stock-qty {
+  font-weight: 700;
+  color: #007600;
 }
 
 .amz-card-title a {
@@ -873,9 +874,25 @@ a:hover {
 }
 
 .amz-stock {
+  margin: 0 0 14px;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--amz-text);
+}
+
+.amz-stock-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--amz-muted);
+  margin-bottom: 4px;
+}
+
+.amz-stock-qty {
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #007600;
-  font-size: 16px;
-  margin: 12px 0;
 }
 
 /* —— Cart (Amazon-ish) —— */

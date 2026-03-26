@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import product_image, amazon_stars, price_amazon %}
+{% from "_macros.html" import product_image, price_amazon %}
 {% block title %}{{ product.name }}{% endblock %}
 {% block content %}
 <div class="amz-inner amz-crumb">
@@ -16,9 +16,10 @@
     <div class="amz-pdp-buy">
       <p class="amz-pdp-cat">{{ product.category }}</p>
       <h1 class="amz-pdp-title">{{ product.name }}</h1>
-      {% set sn = 3 + (product.id % 3) %}
-      {{ amazon_stars(sn) }}
-      <div class="amz-stock">Em estoque</div>
+      <p class="amz-stock" role="status">
+        <span class="amz-stock-label">Estoque disponível:</span>
+        <strong class="amz-stock-qty">{{ product.stock_qty }} unidades</strong>
+      </p>
       {{ price_amazon(product.price_cents) }}
       <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=product.id) }}" method="post" id="jca-pdp-cart-form">
         <div class="form-row">

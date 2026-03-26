@@ -1,4 +1,15 @@
+from sqlalchemy import inspect, text
+
 from jca_ecommerce.models import Product, db
+
+# Estoque virtual (demonstração) por slug — ajuste ou integre ao ERP depois.
+SLUG_TO_STOCK_QTY: dict[str, int] = {
+    "fita-de-arquear-pet": 142,
+    "fita-adesiva": 387,
+    "filme-contratil": 56,
+    "filme-stretch": 203,
+    "filme-embala-tudo": 94,
+}
 
 # Imagens espelhadas de jcaplasticos.com.br (nomenclatura alinhada ao slug do produto no e-commerce).
 SLUG_TO_LOCAL_IMAGE: dict[str, str] = {
@@ -8,6 +19,33 @@ SLUG_TO_LOCAL_IMAGE: dict[str, str] = {
     "filme-stretch": "/static/img/produtos/filme-stretch.jpg",
     "filme-embala-tudo": "/static/img/produtos/filme-embala-tudo.jpg",
 }
+
+
+def ensure_product_stock_column() -> None:
+    """SQLite: adiciona coluna stock_qty em bases já existentes (create_all não altera tabelas)."""
+    try:
+        inspector = inspect(db.engine)
+    except Exception:
+        return
+    if not inspector.has_table("products"):
+        return
+    cols = {c["name"] for c in inspector.get_columns("products")}
+    if "stock_qty" in cols:
+        return
+    with db.engine.begin() as conn:
+        conn.execute(text("ALTER TABLE products ADD COLUMN stock_qty INTEGER NOT NULL DEFAULT 100"))
+
+
+def sync_virtual_stock_qty() -> None:
+    """Atualiza quantidades virtuais de estoque pelos slugs conhecidos."""
+    changed = False
+    for slug, qty in SLUG_TO_STOCK_QTY.items():
+        p = Product.query.filter_by(slug=slug).first()
+        if p and p.stock_qty != qty:
+            p.stock_qty = qty
+            changed = True
+    if changed:
+        db.session.commit()
 
 
 def sync_product_images_from_jca() -> None:
@@ -23,6 +61,9 @@ def sync_product_images_from_jca() -> None:
 
 
 def seed_products_if_empty() -> None:
+    ensure_product_stock_column()
+    sync_virtual_stock_qty()
+
     if Product.query.first():
         sync_product_images_from_jca()
         return
@@ -36,6 +77,7 @@ def seed_products_if_empty() -> None:
             "long_desc": "Fita PET para arqueação, ideal para embalagens e logística. Consulte larguras e espessuras.",
             "price_cents": 8990,
             "image_url": SLUG_TO_LOCAL_IMAGE["fita-de-arquear-pet"],
+            "stock_qty": SLUG_TO_STOCK_QTY["fita-de-arquear-pet"],
         },
         {
             "sku": "JCA-FITA-AD",
@@ -46,6 +88,7 @@ def seed_products_if_empty() -> None:
             "long_desc": "Fita adesiva de qualidade para fechamento de caixas e embalagens.",
             "price_cents": 2490,
             "image_url": SLUG_TO_LOCAL_IMAGE["fita-adesiva"],
+            "stock_qty": SLUG_TO_STOCK_QTY["fita-adesiva"],
         },
         {
             "sku": "JCA-FILME-CONT",
@@ -56,6 +99,7 @@ def seed_products_if_empty() -> None:
             "long_desc": "Filme para termoencolhimento, proteção e acabamento de produtos.",
             "price_cents": 15900,
             "image_url": SLUG_TO_LOCAL_IMAGE["filme-contratil"],
+            "stock_qty": SLUG_TO_STOCK_QTY["filme-contratil"],
         },
         {
             "sku": "JCA-STRETCH",
@@ -66,6 +110,7 @@ def seed_products_if_empty() -> None:
             "long_desc": "Paleteização e embalagem com excelente alongamento e fixação.",
             "price_cents": 11200,
             "image_url": SLUG_TO_LOCAL_IMAGE["filme-stretch"],
+            "stock_qty": SLUG_TO_STOCK_QTY["filme-stretch"],
         },
         {
             "sku": "JCA-EMBALA",
@@ -76,6 +121,7 @@ def seed_products_if_empty() -> None:
             "long_desc": "Indicado para clínicas, consultórios, salões, movelarias e muito mais.",
             "price_cents": 6790,
             "image_url": SLUG_TO_LOCAL_IMAGE["filme-embala-tudo"],
+            "stock_qty": SLUG_TO_STOCK_QTY["filme-embala-tudo"],
         },
     ]
     for p in catalog:
