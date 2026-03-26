@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Atendimento{% endblock %}
+{% block content %}
+<div class="amz-inner amz-crumb">
+  <a href="{{ url_for('store.home') }}">JCA Store</a> › <span>Atendimento</span>
+</div>
+
+<div class="amz-section">
+  <div class="amz-inner">
+    <div class="amz-section-panel jca-page-simple">
+      <h1 class="amz-section-title" style="margin-bottom:12px;">Atendimento</h1>
+      <p class="jca-page-lead">Fale com a JCA para orçamentos, dúvidas sobre produtos ou suporte.</p>
+      <ul class="jca-atendimento-list">
+        <li><strong>Telefone:</strong> <a href="https://api.whatsapp.com/send?l=pt&amp;phone=557932514243" target="_blank" rel="noopener noreferrer">(79) 3251-4243</a></li>
+        <li><strong>WhatsApp (orçamentos):</strong> <a href="https://api.whatsapp.com/send?l=pt&amp;phone=5579999697570" target="_blank" rel="noopener noreferrer">(79) 99969-7570</a></li>
+        <li><strong>E-mail:</strong> <a href="mailto:contato@jcaplasticos.com.br">contato@jcaplasticos.com.br</a></li>
+        <li><strong>Endereço:</strong> <a href="https://www.google.com/maps/place/JCA+PLASTICOS/@-10.845851,-37.070266,15z" target="_blank" rel="noopener noreferrer">Av. Perimetral A, Galpão 11 — Marcos Freire I, Nossa Sra. do Socorro — SE, 49160-000</a></li>
+        <li><strong>Horário:</strong> segunda a sexta, 07h30 às 17h30</li>
+      </ul>
+      <p class="jca-page-foot"><a href="https://jcaplasticos.com.br/orcamento/" target="_blank" rel="noopener noreferrer">Solicitar orçamento no site institucional →</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -84,15 +84,13 @@
           <span class="amz-hamburger" aria-hidden="true"></span>
           Todos
         </button>
-        <nav class="amz-subnav-links" aria-label="Atalhos">
+        <nav class="amz-subnav-links" aria-label="Navegação principal">
           <a href="{{ url_for('store.products') }}">Ofertas do dia</a>
           <a href="{{ url_for('store.products') }}">Mais vendidos</a>
-          <a href="{{ url_for('store.products', categoria='Fita de Arquear') }}">Fita de Arquear</a>
-          <a href="{{ url_for('store.products', categoria='Fita Adesiva') }}">Fita Adesiva</a>
-          <a href="{{ url_for('store.products', categoria='Filme Stretch') }}">Filme Stretch</a>
-          <a href="{{ url_for('store.products', categoria='Filme Contrátil') }}">Filme Contrátil</a>
-          <a href="{{ url_for('store.products', categoria='Filme Embala Tudo') }}">Embala Tudo</a>
+          <a href="{{ url_for('store.products') }}">Produtos</a>
           <a href="{{ url_for('store.cart') }}">Carrinho</a>
+          <a href="{{ url_for('store.atendimento') }}">Atendimento</a>
+          <a href="{{ url_for('store.sobre') }}">Sobre nós</a>
         </nav>
       </div>
     </div>

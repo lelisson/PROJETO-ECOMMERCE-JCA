@@ -130,6 +130,16 @@ def product_detail(slug):
     return render_template("product.html", product=p)
 
 
+@bp.route("/atendimento")
+def atendimento():
+    return render_template("atendimento.html")
+
+
+@bp.route("/sobre")
+def sobre():
+    return render_template("sobre.html")
+
+
 def _wants_json_response() -> bool:
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return True

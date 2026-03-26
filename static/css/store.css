@@ -794,6 +794,38 @@ a:hover {
   background: var(--amz-yellow-hover);
 }
 
+/* —— Páginas simples (atendimento, sobre) —— */
+.jca-page-simple {
+  max-width: 720px;
+}
+
+.jca-page-simple p {
+  margin: 0 0 14px;
+  line-height: 1.55;
+  color: var(--amz-text);
+}
+
+.jca-page-lead {
+  font-size: 1.05rem;
+  color: var(--amz-muted);
+}
+
+.jca-atendimento-list {
+  margin: 0 0 20px;
+  padding-left: 1.25rem;
+  line-height: 1.7;
+}
+
+.jca-atendimento-list li {
+  margin-bottom: 10px;
+}
+
+.jca-page-foot {
+  margin-top: 20px !important;
+  padding-top: 16px;
+  border-top: 1px solid var(--amz-border);
+}
+
 /* —— Breadcrumb —— */
 .amz-crumb {
   font-size: 12px;
