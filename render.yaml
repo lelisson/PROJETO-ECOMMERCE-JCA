@@ -5,6 +5,8 @@ services:
     name: projeto-ecommerce-jca
     runtime: python
     plan: free
+    # Deploy automático a cada commit na branch ligada ao serviço (GitHub/GitLab).
+    autoDeployTrigger: commit
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1
     healthCheckPath: /health

@@ -22,7 +22,7 @@ Com a conta Render aberta no navegador, use **um clique** (o GitHub precisa auto
 
 Link direto (mesmo efeito): [render.com/deploy?repo=https://github.com/lelisson/PROJETO-ECOMMERCE-JCA](https://render.com/deploy?repo=https://github.com/lelisson/PROJETO-ECOMMERCE-JCA)
 
-Na tela do Render, confira o serviço definido pelo [`render.yaml`](render.yaml) e clique para aplicar. O primeiro build leva alguns minutos; quando ficar **Live**, o link da tabela acima deve abrir o site. Cada **push** na `main` gera um novo deploy.
+Na tela do Render, confira o serviço definido pelo [`render.yaml`](render.yaml) e clique para aplicar. O primeiro build leva alguns minutos; quando ficar **Live**, o link da tabela acima deve abrir o site. O blueprint inclui **`autoDeployTrigger: commit`**: cada **push** na branch ligada (ex.: `main`) dispara deploy automático. Se o serviço já existia com auto-deploy desligado, sincronize o blueprint no painel ou em **Settings → Auto-Deploy → On Commit**.
 
 **Alternativa manual:** [Dashboard](https://dashboard.render.com) → **New → Blueprint** → repositório **PROJETO-ECOMMERCE-JCA**.
 
