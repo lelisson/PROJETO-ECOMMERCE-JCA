@@ -88,7 +88,10 @@
           <a href="{{ url_for('store.products') }}">Ofertas do dia</a>
           <a href="{{ url_for('store.products') }}">Mais vendidos</a>
           <a href="{{ url_for('store.products') }}">Produtos</a>
-          <a href="{{ url_for('store.cart') }}">Carrinho</a>
+          <a href="{{ url_for('store.cart') }}" class="jca-subnav-cart{% if cart_count %} jca-subnav-cart--active{% endif %}" data-subnav-cart-link>
+            Carrinho
+            <span class="jca-subnav-cart-badge" {% if cart_count %}aria-label="{{ cart_count }} itens no carrinho"{% else %}aria-hidden="true"{% endif %}>{% if cart_count %}{{ cart_count }}{% endif %}</span>
+          </a>
           <a href="{{ url_for('store.atendimento') }}">Atendimento</a>
           <a href="{{ url_for('store.sobre') }}">Sobre nós</a>
         </nav>

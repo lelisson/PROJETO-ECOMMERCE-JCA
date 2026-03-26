@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import secrets
+
 from flask import (
     Blueprint,
     abort,
@@ -20,9 +22,17 @@ from jca_ecommerce.br_fiscal import (
     tipo_fiscal_para_cliente,
     validar_documento,
 )
+from jca_ecommerce.freight import calculate_freight_for_cep
 from jca_ecommerce.models import Order, OrderItem, Product, db
 
 bp = Blueprint("store", __name__)
+
+PAYMENT_LABELS = {
+    "pix": "PIX",
+    "debito": "Cartão de débito",
+    "credito": "Cartão de crédito",
+    "boleto": "Boleto bancário",
+}
 
 SHIPPING_FREE_MIN_CENTS = 20000
 SHIPPING_FLAT_CENTS = 1590
@@ -190,6 +200,16 @@ def api_cart_count():
     return jsonify(cart_count=_cart_count())
 
 
+@bp.post("/api/frete/calcular")
+def api_freight_calc():
+    """Calcula frete por distância (OSRM / fallback) — demonstração."""
+    payload = request.get_json(silent=True) or {}
+    cep = payload.get("cep", "")
+    out = calculate_freight_for_cep(cep)
+    status = 200 if out.get("ok") else 400
+    return jsonify(out), status
+
+
 @bp.post("/carrinho/atualizar")
 def update_cart():
     cart = _cart()
@@ -224,14 +244,36 @@ def cart():
     )
 
 
+def _checkout_render(
+    lines,
+    subtotal,
+    shipping,
+    total,
+    form,
+    tipo_for_label,
+):
+    return render_template(
+        "checkout.html",
+        lines=lines,
+        subtotal_cents=subtotal,
+        shipping_cents=shipping,
+        total_cents=total,
+        form=form,
+        fiscal_label=label_documento_fiscal(tipo_fiscal_para_cliente(tipo_for_label)),
+        payment_labels=PAYMENT_LABELS,
+    )
+
+
 @bp.route("/checkout", methods=["GET", "POST"])
 def checkout():
     lines, subtotal = _cart_lines()
     if not lines:
         flash("Seu carrinho está vazio.", "erro")
         return redirect(url_for("store.cart"))
-    shipping = 0 if subtotal >= SHIPPING_FREE_MIN_CENTS else SHIPPING_FLAT_CENTS
-    total = subtotal + shipping
+
+    # Resumo inicial (frete ajustado no checkout conforme retirada / cálculo)
+    shipping_preview = 0
+    total_preview = subtotal + shipping_preview
 
     if request.method == "POST":
         tipo_s = request.form.get("customer_type", "pf")
@@ -240,32 +282,43 @@ def checkout():
         name = (request.form.get("name") or "").strip()
         email = (request.form.get("email") or "").strip()
         phone = (request.form.get("phone") or "").strip()
+        cep_raw = (request.form.get("cep") or "").strip()
+        cep_digits = "".join(c for c in cep_raw if c.isdigit())
+        delivery_mode = (request.form.get("delivery_mode") or "retirada").strip().lower()
+        if delivery_mode not in ("retirada", "entrega"):
+            delivery_mode = "retirada"
+        pay_method = (request.form.get("payment_method") or "pix").strip().lower()
+        if pay_method not in PAYMENT_LABELS:
+            pay_method = "pix"
 
         ok, msg_or_digits = validar_documento(tipo, doc)
         if not ok:
             flash(msg_or_digits, "erro")
-            return render_template(
-                "checkout.html",
-                lines=lines,
-                subtotal_cents=subtotal,
-                shipping_cents=shipping,
-                total_cents=total,
-                form=request.form,
-                fiscal_label=label_documento_fiscal(tipo_fiscal_para_cliente(tipo)),
-            )
+            return _checkout_render(lines, subtotal, shipping_preview, total_preview, request.form, tipo)
+
         if not name or not email:
             flash("Nome e e-mail são obrigatórios.", "erro")
-            return render_template(
-                "checkout.html",
-                lines=lines,
-                subtotal_cents=subtotal,
-                shipping_cents=shipping,
-                total_cents=total,
-                form=request.form,
-                fiscal_label=label_documento_fiscal(tipo_fiscal_para_cliente(tipo)),
-            )
+            return _checkout_render(lines, subtotal, shipping_preview, total_preview, request.form, tipo)
 
+        if len(cep_digits) != 8:
+            flash("Informe um CEP válido (8 dígitos).", "erro")
+            return _checkout_render(lines, subtotal, shipping_preview, total_preview, request.form, tipo)
+
+        freight_km_val = None
+        if delivery_mode == "entrega":
+            fr = calculate_freight_for_cep(cep_digits)
+            if not fr.get("ok"):
+                flash(fr.get("error", "Não foi possível calcular o frete."), "erro")
+                return _checkout_render(lines, subtotal, shipping_preview, total_preview, request.form, tipo)
+            shipping = int(fr["freight_cents"])
+            freight_km_val = float(fr["distance_km"])
+        else:
+            shipping = 0
+
+        total = subtotal + shipping
         ft = tipo_fiscal_para_cliente(tipo)
+        pickup_code = f"RET-{secrets.token_hex(4).upper()}"
+
         order = Order(
             customer_type=tipo.value,
             document_digits=msg_or_digits,
@@ -276,10 +329,17 @@ def checkout():
             subtotal_cents=subtotal,
             shipping_cents=shipping,
             total_cents=total,
-            fiscal_status="pendente",
+            fiscal_status="simulacao",
+            cep=cep_digits,
+            delivery_mode=delivery_mode,
+            freight_km=freight_km_val,
+            payment_method=pay_method,
+            pickup_code=pickup_code,
+            tracking_code="",
         )
         db.session.add(order)
         db.session.flush()
+        order.tracking_code = f"ETQ-BR-JCA-{order.id:06d}-{secrets.token_hex(3).upper()}"
         for line in lines:
             db.session.add(
                 OrderItem(
@@ -300,6 +360,7 @@ def checkout():
             lines=lines,
             document_formatted=doc_fmt,
             fiscal_label=label_documento_fiscal(ft),
+            payment_label=PAYMENT_LABELS.get(pay_method, pay_method),
         )
 
     tipo_default = TipoCliente.FISICA
@@ -307,8 +368,9 @@ def checkout():
         "checkout.html",
         lines=lines,
         subtotal_cents=subtotal,
-        shipping_cents=shipping,
-        total_cents=total,
+        shipping_cents=shipping_preview,
+        total_cents=total_preview,
         form={},
         fiscal_label=label_documento_fiscal(tipo_fiscal_para_cliente(tipo_default)),
+        payment_labels=PAYMENT_LABELS,
     )

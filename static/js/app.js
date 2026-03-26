@@ -26,9 +26,26 @@
   }
 
   function updateCartBadge(count) {
+    var n = Math.max(0, Math.floor(Number(count) || 0));
     qsa(".amz-cart-count").forEach(function (el) {
-      el.textContent = String(count);
+      el.textContent = String(n);
     });
+    var badge = qs(".jca-subnav-cart-badge");
+    var subLink = qs("[data-subnav-cart-link]");
+    if (badge) {
+      badge.textContent = n > 0 ? String(n) : "";
+      if (n > 0) {
+        badge.setAttribute("aria-label", n + " itens no carrinho");
+        badge.removeAttribute("aria-hidden");
+      } else {
+        badge.removeAttribute("aria-label");
+        badge.setAttribute("aria-hidden", "true");
+      }
+    }
+    if (subLink) {
+      if (n > 0) subLink.classList.add("jca-subnav-cart--active");
+      else subLink.classList.remove("jca-subnav-cart--active");
+    }
   }
 
   function showToast(message, kind) {
@@ -201,12 +218,13 @@
     return String(s || "").replace(/\D/g, "");
   }
 
-  function initCheckout() {
+  function initCheckoutWizard() {
     var form = qs("#jca-checkout-form");
-    if (!form) return;
+    if (!form || !form.getAttribute("data-api-frete")) return;
 
     var sel = qs("#customer_type", form);
     var span = qs("#fiscal-label-text", form);
+    var docLabel = qs("#jca-doc-label", form);
     var fiscalMap = {
       pf: "NFC-e (cupom fiscal eletrônico)",
       pj: "NF-e (nota fiscal eletrônica)",
@@ -214,10 +232,211 @@
 
     function updFiscal() {
       if (span && sel) span.textContent = fiscalMap[sel.value] || "";
+      if (docLabel && sel) docLabel.textContent = sel.value === "pj" ? "CNPJ" : "CPF";
     }
     if (sel) {
       sel.addEventListener("change", updFiscal);
       updFiscal();
+    }
+
+    var steps = qsa(".jca-step", form);
+    var indicator = qs("#jca-step-indicator");
+    var btnPrev = qs("#jca-wizard-prev", form);
+    var btnNext = qs("#jca-wizard-next", form);
+    var btnSubmit = qs("#jca-checkout-submit", form);
+    var deliveryInput = qs("#delivery_mode", form);
+    var freightPanel = qs("#jca-freight-panel", form);
+    var btnRet = qs("#jca-btn-retirada", form);
+    var btnFrete = qs("#jca-btn-calc-frete", form);
+    var btnFreteRun = qs("#jca-freight-run", form);
+    var freightStatus = qs("#jca-freight-status", form);
+    var freightResult = qs("#jca-freight-result", form);
+    var apiFrete = form.getAttribute("data-api-frete");
+    var subtotalCents = parseInt(form.getAttribute("data-subtotal-cents") || "0", 10) || 0;
+
+    var currentStep = 1;
+    var freightReady = false;
+    var freightCents = 0;
+    var lastDelivery = (deliveryInput && deliveryInput.value) || "retirada";
+
+    function showStep(n) {
+      currentStep = n;
+      steps.forEach(function (el) {
+        var sn = parseInt(el.getAttribute("data-checkout-step"), 10);
+        var on = sn === n;
+        el.hidden = !on;
+        el.classList.toggle("jca-step--hidden", !on);
+      });
+      if (indicator) {
+        var titles = ["", "Seus dados", "Retirada ou frete", "Pagamento (simulado)"];
+        indicator.textContent = "Passo " + n + " de 3 — " + titles[n];
+      }
+      if (btnPrev) btnPrev.hidden = n <= 1;
+      if (btnNext) btnNext.hidden = n >= 3;
+      if (btnSubmit) btnSubmit.hidden = n < 3;
+    }
+
+    function updateResumo() {
+      var f = freightCents;
+      if (lastDelivery === "retirada") f = 0;
+      var elF = qs("#jca-resumo-frete");
+      var elT = qs("#jca-resumo-total");
+      if (elF) elF.textContent = formatBRL(f);
+      if (elT) elT.textContent = formatBRL(subtotalCents + f);
+    }
+
+    function validateStep1() {
+      var tipo = sel ? sel.value : "pf";
+      var doc = digitsOnly(qs("#document", form).value);
+      var name = (qs("#name", form).value || "").trim();
+      var phone = (qs("#phone", form).value || "").trim();
+      var cep = digitsOnly(qs("#cep", form).value);
+      var email = (qs("#email", form).value || "").trim();
+      if (tipo === "pf" && doc.length !== 11) return "CPF deve ter 11 dígitos.";
+      if (tipo === "pj" && doc.length !== 14) return "CNPJ deve ter 14 dígitos.";
+      if (!name) return "Informe o nome ou razão social.";
+      if (!phone) return "Informe o telefone.";
+      if (cep.length !== 8) return "Informe um CEP com 8 dígitos.";
+      if (!email) return "Informe o e-mail.";
+      return "";
+    }
+
+    function validateStep2() {
+      if (lastDelivery === "entrega" && !freightReady) {
+        return "Calcule o frete antes de continuar ou escolha retirada na loja.";
+      }
+      return "";
+    }
+
+    function validateFinal() {
+      var a = validateStep1();
+      if (a) return a;
+      var b = validateStep2();
+      if (b) return b;
+      return "";
+    }
+
+    if (btnRet) {
+      btnRet.addEventListener("click", function () {
+        lastDelivery = "retirada";
+        if (deliveryInput) deliveryInput.value = "retirada";
+        freightReady = true;
+        freightCents = 0;
+        if (freightPanel) freightPanel.hidden = true;
+        if (freightStatus) freightStatus.textContent = "";
+        if (freightResult) {
+          freightResult.hidden = true;
+          freightResult.innerHTML = "";
+        }
+        btnRet.classList.add("jca-btn-choice--primary");
+        if (btnFrete) btnFrete.classList.remove("jca-btn-choice--primary");
+        updateResumo();
+      });
+    }
+
+    if (btnFrete) {
+      btnFrete.addEventListener("click", function () {
+        lastDelivery = "entrega";
+        if (deliveryInput) deliveryInput.value = "entrega";
+        freightReady = false;
+        freightCents = 0;
+        if (freightPanel) freightPanel.hidden = false;
+        if (freightStatus) freightStatus.textContent = "";
+        if (freightResult) {
+          freightResult.hidden = true;
+          freightResult.innerHTML = "";
+        }
+        btnFrete.classList.add("jca-btn-choice--primary");
+        if (btnRet) btnRet.classList.remove("jca-btn-choice--primary");
+        updateResumo();
+      });
+    }
+
+    if (btnFreteRun) {
+      btnFreteRun.addEventListener("click", function () {
+        var cep = digitsOnly(qs("#cep", form).value);
+        freightReady = false;
+        if (freightStatus) freightStatus.textContent = "Calculando…";
+        if (freightResult) freightResult.hidden = true;
+        fetch(apiFrete, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ cep: cep }),
+        })
+          .then(function (r) {
+            return r.json().then(function (data) {
+              return { ok: r.ok, data: data };
+            });
+          })
+          .then(function (res) {
+            if (res.ok && res.data && res.data.ok) {
+              freightCents = res.data.freight_cents || 0;
+              freightReady = true;
+              if (freightStatus) freightStatus.textContent = "";
+              if (freightResult) {
+                freightResult.hidden = false;
+                freightResult.innerHTML =
+                  "<p><strong>Distância estimada:</strong> " +
+                  res.data.distance_km +
+                  " km (" +
+                  (res.data.mode === "osrm" ? "rota" : "estimativa") +
+                  ")</p><p><strong>Frete:</strong> " +
+                  formatBRL(freightCents) +
+                  "</p><p class='jca-frete-addr'>" +
+                  (res.data.address_label || "") +
+                  "</p>";
+              }
+              updateResumo();
+            } else {
+              if (freightStatus)
+                freightStatus.textContent = (res.data && res.data.error) || "Não foi possível calcular.";
+            }
+          })
+          .catch(function () {
+            if (freightStatus) freightStatus.textContent = "Erro de rede ao calcular frete.";
+          });
+      });
+    }
+
+    if (btnNext) {
+      btnNext.addEventListener("click", function () {
+        var errBox = qs("#jca-checkout-error", form);
+        if (errBox) {
+          errBox.hidden = true;
+          errBox.textContent = "";
+        }
+        if (currentStep === 1) {
+          var e1 = validateStep1();
+          if (e1) {
+            if (errBox) {
+              errBox.textContent = e1;
+              errBox.hidden = false;
+            }
+            return;
+          }
+          showStep(2);
+          if (lastDelivery === "retirada" && btnRet) btnRet.click();
+          else if (lastDelivery === "entrega" && btnFrete) btnFrete.click();
+          return;
+        }
+        if (currentStep === 2) {
+          var e2 = validateStep2();
+          if (e2) {
+            if (errBox) {
+              errBox.textContent = e2;
+              errBox.hidden = false;
+            }
+            return;
+          }
+          showStep(3);
+        }
+      });
+    }
+
+    if (btnPrev) {
+      btnPrev.addEventListener("click", function () {
+        if (currentStep > 1) showStep(currentStep - 1);
+      });
     }
 
     form.addEventListener("submit", function (e) {
@@ -226,48 +445,35 @@
         err.hidden = true;
         err.textContent = "";
       }
-
-      var tipo = sel ? sel.value : "pf";
-      var docEl = qs("#document", form);
-      var doc = docEl ? digitsOnly(docEl.value) : "";
-      var name = (qs("#name", form) && qs("#name", form).value) || "";
-      name = name.trim();
-      var email = (qs("#email", form) && qs("#email", form).value) || "";
-      email = email.trim();
-
-      if (tipo === "pf") {
-        if (doc.length !== 11) {
-          e.preventDefault();
-          if (err) {
-            err.textContent = "CPF deve ter 11 dígitos (verifique o número).";
-            err.hidden = false;
-          }
-          return;
-        }
-      } else if (doc.length !== 14) {
+      var msg = validateFinal();
+      if (msg) {
         e.preventDefault();
+        var e1 = validateStep1();
+        if (e1) showStep(1);
+        else showStep(2);
         if (err) {
-          err.textContent = "CNPJ deve ter 14 dígitos (verifique o número).";
+          err.textContent = msg;
           err.hidden = false;
         }
         return;
       }
-
-      if (!name || !email) {
-        e.preventDefault();
-        if (err) {
-          err.textContent = "Preencha nome (ou razão social) e e-mail.";
-          err.hidden = false;
-        }
-        return;
-      }
-
       var btn = qs(".jca-checkout-submit", form);
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Processando…";
       }
     });
+
+    if (lastDelivery === "entrega" && btnFrete) {
+      btnFrete.classList.add("jca-btn-choice--primary");
+      if (btnRet) btnRet.classList.remove("jca-btn-choice--primary");
+      if (freightPanel) freightPanel.hidden = false;
+    } else {
+      if (btnRet) btnRet.classList.add("jca-btn-choice--primary");
+    }
+
+    showStep(1);
+    updateResumo();
   }
 
   function syncCartCountOnLoad() {
@@ -303,7 +509,7 @@
     initAddToCartAjax();
     bindQtySteppers(document);
     initCartLive();
-    initCheckout();
+    initCheckoutWizard();
     syncCartCountOnLoad();
     initSearchHotkey();
   });

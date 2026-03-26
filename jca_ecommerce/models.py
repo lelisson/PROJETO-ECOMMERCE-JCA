@@ -42,6 +42,12 @@ class Order(db.Model):
     subtotal_cents = db.Column(db.Integer, nullable=False)
     shipping_cents = db.Column(db.Integer, default=0)
     total_cents = db.Column(db.Integer, nullable=False)
+    cep = db.Column(db.String(12), default="")
+    delivery_mode = db.Column(db.String(20), default="retirada")  # retirada | entrega
+    freight_km = db.Column(db.Float, nullable=True)
+    payment_method = db.Column(db.String(20), default="pix")  # pix | debito | credito | boleto
+    pickup_code = db.Column(db.String(32), default="")
+    tracking_code = db.Column(db.String(64), default="")
 
     items = db.relationship("OrderItem", backref="order", lazy=True, cascade="all, delete-orphan")
 

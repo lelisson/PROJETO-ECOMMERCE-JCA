@@ -11,7 +11,7 @@ from flask import Flask
 
 from config import Config
 from jca_ecommerce.models import db
-from jca_ecommerce.seed import seed_products_if_empty
+from jca_ecommerce.seed import ensure_orders_extra_columns, seed_products_if_empty
 from jca_ecommerce import views
 
 
@@ -34,6 +34,7 @@ def create_app(config_class: type = Config) -> Flask:
 
     with app.app_context():
         db.create_all()
+        ensure_orders_extra_columns()
         seed_products_if_empty()
 
     return app

@@ -21,6 +21,31 @@ SLUG_TO_LOCAL_IMAGE: dict[str, str] = {
 }
 
 
+ORDER_EXTRA_COLUMNS: list[tuple[str, str]] = [
+    ("cep", "TEXT DEFAULT ''"),
+    ("delivery_mode", "TEXT DEFAULT 'retirada'"),
+    ("freight_km", "REAL"),
+    ("payment_method", "TEXT DEFAULT 'pix'"),
+    ("pickup_code", "TEXT DEFAULT ''"),
+    ("tracking_code", "TEXT DEFAULT ''"),
+]
+
+
+def ensure_orders_extra_columns() -> None:
+    """SQLite: colunas extras em pedidos (checkout simulado, frete, retirada)."""
+    try:
+        inspector = inspect(db.engine)
+    except Exception:
+        return
+    if not inspector.has_table("orders"):
+        return
+    existing = {c["name"] for c in inspector.get_columns("orders")}
+    with db.engine.begin() as conn:
+        for col_name, ddl in ORDER_EXTRA_COLUMNS:
+            if col_name not in existing:
+                conn.execute(text(f"ALTER TABLE orders ADD COLUMN {col_name} {ddl}"))
+
+
 def ensure_product_stock_column() -> None:
     """SQLite: adiciona coluna stock_qty em bases já existentes (create_all não altera tabelas)."""
     try:

@@ -1,14 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Pedido confirmado{% endblock %}
+{% block title %}Pedido simulado — concluído{% endblock %}
 {% block content %}
 <div class="amz-inner" style="padding:24px 12px 40px;max-width:720px;">
-  <h1 style="font-size:26px;font-weight:400;color:#007600;margin:0 0 16px;">Pedido confirmado</h1>
+  <div class="jca-sim-banner jca-sim-banner--compact" role="note">
+    <strong>Simulação concluída.</strong> Nenhum pagamento real foi processado.
+  </div>
+  <h1 style="font-size:26px;font-weight:400;color:#007600;margin:16px 0;">Pedido registrado</h1>
   <div class="amz-panel">
-    <p>Obrigado, <strong>{{ order.name }}</strong>. Seu pedido <strong>#{{ order.id }}</strong> foi registrado.</p>
+    <p>Obrigado, <strong>{{ order.name }}</strong>. Pedido <strong>#{{ order.id }}</strong>.</p>
+
+    <div class="jca-order-codes">
+      <div class="jca-code-box">
+        <span class="jca-code-label">Código para retirada na loja</span>
+        <code class="jca-code-value">{{ order.pickup_code }}</code>
+        <span class="jca-code-hint">Apresente na JCA ao buscar o pedido (simulação).</span>
+      </div>
+      {% if order.delivery_mode == 'entrega' %}
+      <div class="jca-code-box">
+        <span class="jca-code-label">Etiqueta / rastreio (envio)</span>
+        <code class="jca-code-value">{{ order.tracking_code }}</code>
+        <span class="jca-code-hint">Referência simulada para recebimento em casa.</span>
+      </div>
+      {% else %}
+      <div class="jca-code-box jca-code-box--muted">
+        <span class="jca-code-label">Entrega</span>
+        <p class="jca-code-hint" style="margin:0;">Retirada na loja — sem etiqueta de envio.</p>
+      </div>
+      {% endif %}
+    </div>
+
     <p><strong>Documento:</strong> {{ document_formatted }} ({{ 'CPF' if order.customer_type == 'pf' else 'CNPJ' }})</p>
     <p><strong>Documento fiscal previsto:</strong> {{ fiscal_label }}</p>
+    <p><strong>Forma de pagamento (simulada):</strong> {{ payment_label }}</p>
+    <p><strong>Modalidade:</strong> {% if order.delivery_mode == 'entrega' %}Entrega (frete calculado){% else %}Retirada na loja{% endif %}</p>
+    {% if order.delivery_mode == 'entrega' and order.freight_km %}
+    <p><strong>Distância estimada:</strong> {{ "%.2f"|format(order.freight_km) }} km</p>
+    {% endif %}
+    {% if order.cep and order.cep|length >= 8 %}
+    <p><strong>CEP informado:</strong> {{ order.cep[:5] }}-{{ order.cep[5:] }}</p>
+    {% endif %}
+
     <p class="fiscal-box">
-      <strong>Produção:</strong> integrar ao emissor fiscal (ERP / SEFAZ). Status: <em>{{ order.fiscal_status }}</em>.
+      <strong>Produção:</strong> integrar ao emissor fiscal (ERP / SEFAZ). Status interno: <em>{{ order.fiscal_status }}</em>.
     </p>
     <h2 style="font-size:16px;margin:16px 0 8px;">Itens</h2>
     <ul style="margin:0;padding-left:18px;">
@@ -16,7 +49,9 @@
       <li>{{ line.product.name }} × {{ line.quantity }}</li>
       {% endfor %}
     </ul>
-    <p style="margin-top:16px;"><strong>Total:</strong> R$ {{ "%.2f"|format(order.total_cents / 100) }}</p>
+    <p style="margin-top:16px;"><strong>Subtotal:</strong> R$ {{ "%.2f"|format(order.subtotal_cents / 100) }}</p>
+    <p><strong>Frete:</strong> {% if order.shipping_cents == 0 %}R$ 0,00{% else %}R$ {{ "%.2f"|format(order.shipping_cents / 100) }}{% endif %}</p>
+    <p><strong>Total:</strong> R$ {{ "%.2f"|format(order.total_cents / 100) }}</p>
     <p><a href="{{ url_for('store.products') }}">Continuar comprando</a></p>
   </div>
 </div>
