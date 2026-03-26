@@ -12,3 +12,6 @@ instance/*.sqlite3
 .pytest_cache/
 .mypy_cache/
 .DS_Store
+
+# Cópia estática gerada por host/exportar_copia_site.py
+copia-site/

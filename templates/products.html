@@ -1,33 +1,50 @@
 {% extends "base.html" %}
-{% block title %}Produtos{% endblock %}
+{% from "_macros.html" import product_image, amazon_stars, price_amazon %}
+{% block title %}Resultados{% endblock %}
 {% block content %}
-<h1 class="section-title" style="font-size:1.5rem;">Departamentos</h1>
-<form class="filters" method="get" action="{{ url_for('store.products') }}">
-  <input type="search" name="q" placeholder="Busca" value="{{ q }}">
-  <select name="categoria" aria-label="Categoria">
-    <option value="">Todas as categorias</option>
-    {% for c in categories %}
-    <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
-    {% endfor %}
-  </select>
-  <button type="submit" class="btn btn-primary">Filtrar</button>
-</form>
-<div class="grid">
-  {% for p in items %}
-  <article class="card">
-    <div class="card-img" aria-hidden="true">📦</div>
-    <div class="card-body">
-      <h2 class="card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h2>
-      <p style="font-size:0.85rem;color:var(--muted);margin:0;">{{ p.category }}</p>
-      <div class="price">{{ p.price_brl() }}</div>
-      <form action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
-        <input type="hidden" name="qty" value="1">
-        <button type="submit" class="btn btn-primary btn-cart">Adicionar ao carrinho</button>
+<div class="amz-inner amz-crumb">
+  <a href="{{ url_for('store.home') }}">JCA Store</a> › <span>Departamentos</span>
+</div>
+
+<div class="amz-section">
+  <div class="amz-inner">
+    <div class="amz-section-panel">
+      <h1 class="amz-section-title" style="margin-bottom:8px;">{{ items|length }} resultado{% if items|length != 1 %}s{% endif %}</h1>
+
+      <form class="amz-filters jca-filter-form" method="get" action="{{ url_for('store.products') }}">
+        <input id="jca-filter-q" class="jca-filter-search" type="search" name="q" placeholder="Refinar busca (use / para focar)" value="{{ q }}" autocomplete="off">
+        <select name="categoria" aria-label="Categoria">
+          <option value="">Todas as categorias</option>
+          {% for c in categories %}
+          <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="amz-btn-add" style="width:auto;border-radius:8px;">Filtrar</button>
       </form>
+
+      <div class="amz-grid">
+        {% for p in items %}
+        <article class="amz-card">
+          <a class="amz-card-img-wrap" href="{{ url_for('store.product_detail', slug=p.slug) }}">
+            {{ product_image(p) }}
+          </a>
+          <div class="amz-card-body">
+            {% set sn = 3 + (p.id % 3) %}
+            {{ amazon_stars(sn) }}
+            <h2 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h2>
+            <p class="amz-card-cat">{{ p.category }}</p>
+            {{ price_amazon(p.price_cents) }}
+            <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
+              <input type="hidden" name="qty" value="1">
+              <button type="submit" class="amz-btn-add jca-add-cart-btn">Adicionar ao carrinho</button>
+            </form>
+          </div>
+        </article>
+        {% else %}
+        <p>Nenhum produto encontrado.</p>
+        {% endfor %}
+      </div>
     </div>
-  </article>
-  {% else %}
-  <p>Nenhum produto encontrado.</p>
-  {% endfor %}
+  </div>
 </div>
 {% endblock %}

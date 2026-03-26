@@ -1,31 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Checkout{% endblock %}
 {% block content %}
-<h1 class="section-title" style="font-size:1.5rem;">Finalizar pedido</h1>
-<div class="layout-split">
-  <div class="panel">
-    <h2>Resumo</h2>
-    <ul style="padding-left:1.2rem;margin:0;">
-      {% for line in lines %}
-      <li>{{ line.product.name }} × {{ line.quantity }} — R$ {{ "%.2f"|format(line.line_cents / 100) }}</li>
-      {% endfor %}
-    </ul>
-    <div class="sum-line" style="margin-top:1rem;"><span>Frete</span><span>{% if shipping_cents == 0 %}Grátis{% else %}R$ {{ "%.2f"|format(shipping_cents / 100) }}{% endif %}</span></div>
-    <div class="sum-line sum-total"><span>Total</span><span>R$ {{ "%.2f"|format(total_cents / 100) }}</span></div>
-  </div>
-  <div class="panel">
+<div class="amz-inner amz-crumb">
+  <a href="{{ url_for('store.cart') }}">Carrinho</a> › <span>Checkout</span>
+</div>
+<div class="amz-checkout">
+  <div class="amz-panel">
     <h2>Dados e documento fiscal</h2>
-    <form method="post" action="{{ url_for('store.checkout') }}">
+    <form id="jca-checkout-form" method="post" action="{{ url_for('store.checkout') }}" novalidate>
       <div class="form-row">
         <label for="customer_type">Tipo de cliente</label>
         <select id="customer_type" name="customer_type" required>
-          <option value="pf" {% if form.get('customer_type','pf') == 'pf' %}selected{% endif %}>Pessoa física (CPF) — NFC-e (cupom fiscal eletrônico)</option>
-          <option value="pj" {% if form.get('customer_type') == 'pj' %}selected{% endif %}>Pessoa jurídica (CNPJ) — NF-e (nota fiscal eletrônica)</option>
+          <option value="pf" {% if form.get('customer_type','pf') == 'pf' %}selected{% endif %}>Pessoa física (CPF) — NFC-e</option>
+          <option value="pj" {% if form.get('customer_type') == 'pj' %}selected{% endif %}>Pessoa jurídica (CNPJ) — NF-e</option>
         </select>
       </div>
       <p class="fiscal-box" id="fiscal-hint">
-        <strong>Documento fiscal:</strong> <span id="fiscal-label-text">{{ fiscal_label }}</span><br>
-        Pessoa física: emissão de <strong>NFC-e</strong> (cupom fiscal eletrônico). Pessoa jurídica: <strong>NF-e</strong> para escrituração.
+        <strong>Documento fiscal:</strong> <span id="fiscal-label-text">{{ fiscal_label }}</span>
       </p>
       <div class="form-row">
         <label for="document">CPF ou CNPJ</label>
@@ -43,18 +34,19 @@
         <label for="phone">Telefone</label>
         <input id="phone" name="phone" value="{{ form.get('phone','') }}">
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">Confirmar pedido</button>
+      <p class="jca-field-error" id="jca-checkout-error" hidden role="alert"></p>
+      <button type="submit" class="amz-btn-add jca-checkout-submit" style="width:100%;border-radius:8px;">Confirmar pedido</button>
     </form>
   </div>
+  <div class="amz-panel">
+    <h2>Resumo do pedido</h2>
+    <ul style="margin:0;padding-left:18px;font-size:14px;">
+      {% for line in lines %}
+      <li style="margin-bottom:6px;">{{ line.product.name }} × {{ line.quantity }}</li>
+      {% endfor %}
+    </ul>
+    <div class="sum-line" style="margin-top:14px;"><span>Frete</span><span>{% if shipping_cents == 0 %}Grátis{% else %}R$ {{ "%.2f"|format(shipping_cents / 100) }}{% endif %}</span></div>
+    <div class="sum-line sum-total"><span>Total</span><span>R$ {{ "%.2f"|format(total_cents / 100) }}</span></div>
+  </div>
 </div>
-<script>
-(function(){
-  var sel = document.getElementById('customer_type');
-  var span = document.getElementById('fiscal-label-text');
-  if (!sel || !span) return;
-  var map = { pf: 'NFC-e (cupom fiscal eletrônico)', pj: 'NF-e (nota fiscal eletrônica)' };
-  function upd(){ span.textContent = map[sel.value] || ''; }
-  sel.addEventListener('change', upd);
-})();
-</script>
 {% endblock %}

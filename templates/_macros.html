@@ -1,0 +1,25 @@
+{# Estilo de vitrine inspirado em marketplaces tipo Amazon — sem uso de marca registrada. #}
+{% macro product_image(product, class='amz-card-img') %}
+  {% if product.image_url %}
+  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="{{ class }}" loading="lazy" width="240" height="240">
+  {% else %}
+  <img src="{{ url_for('static', filename='img/placeholder-produto.svg') }}" alt="" class="{{ class }}" loading="lazy" width="240" height="240">
+  {% endif %}
+{% endmacro %}
+
+{% macro amazon_stars(seed=4) %}
+  <div class="amz-stars" aria-hidden="true">
+    {% for i in range(5) %}
+      {% if i < seed %}<span class="amz-star amz-star--on">★</span>{% else %}<span class="amz-star">★</span>{% endif %}
+    {% endfor %}
+    <span class="amz-stars-num">{{ 120 + (seed * 17) }}</span>
+  </div>
+{% endmacro %}
+
+{% macro price_amazon(cents) %}
+  <div class="amz-price" itemprop="price">
+    <span class="amz-price-symbol">R$</span>
+    <span class="amz-price-whole">{{ (cents // 100) }}</span>
+    <span class="amz-price-dec">,{{ "%02d"|format(cents % 100) }}</span>
+  </div>
+{% endmacro %}

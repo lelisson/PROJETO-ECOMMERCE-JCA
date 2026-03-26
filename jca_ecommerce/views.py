@@ -4,6 +4,7 @@ from flask import (
     Blueprint,
     abort,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -27,8 +28,25 @@ SHIPPING_FREE_MIN_CENTS = 20000
 SHIPPING_FLAT_CENTS = 1590
 
 
+@bp.route("/health")
+def health():
+    """Teste rápido sem template — se abrir no navegador, o servidor está ok."""
+    return "JCA Store OK. Abra a pagina inicial (rota /).", 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
 def _cart() -> dict[str, int]:
     return session.setdefault("cart", {})
+
+
+def _cart_count() -> int:
+    cart = session.get("cart") or {}
+    n = 0
+    for v in cart.values():
+        try:
+            n += int(v)
+        except (TypeError, ValueError):
+            pass
+    return n
 
 
 def _cart_lines():
@@ -56,9 +74,27 @@ def _cart_lines():
 def inject_company():
     from flask import current_app
 
+    nav_categories: list[str] = []
+    try:
+        nav_categories = [
+            row[0]
+            for row in db.session.query(Product.category)
+            .filter(Product.active.is_(True))
+            .distinct()
+            .order_by(Product.category)
+            .all()
+            if row[0]
+        ]
+    except Exception:
+        pass
+
     return {
         "empresa_razao": current_app.config.get("EMPRESA_RAZAO", ""),
         "empresa_cnpj": current_app.config.get("EMPRESA_CNPJ", ""),
+        "cart_count": _cart_count(),
+        "nav_categories": nav_categories,
+        "shipping_flat_cents": SHIPPING_FLAT_CENTS,
+        "shipping_free_min_cents": SHIPPING_FREE_MIN_CENTS,
     }
 
 
@@ -94,19 +130,54 @@ def product_detail(slug):
     return render_template("product.html", product=p)
 
 
+def _wants_json_response() -> bool:
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return True
+    best = request.accept_mimetypes.best_match(["application/json", "text/html"])
+    return best == "application/json"
+
+
 @bp.post("/carrinho/adicionar/<int:product_id>")
 def add_to_cart(product_id):
+    try:
+        if request.is_json:
+            payload = request.get_json(silent=True) or {}
+            qty = int(payload.get("qty", 1))
+        else:
+            qty = int(request.form.get("qty", 1))
+    except (TypeError, ValueError):
+        qty = 1
+    if qty < 1:
+        qty = 1
+
     p = Product.query.filter_by(id=product_id, active=True).first()
     if not p:
+        if _wants_json_response():
+            return jsonify(ok=False, error="Produto não encontrado."), 404
         abort(404)
+
     cart = _cart()
     key = str(product_id)
-    cart[key] = int(cart.get(key, 0)) + int(request.form.get("qty", 1))
+    cart[key] = int(cart.get(key, 0)) + qty
     if cart[key] < 1:
         cart[key] = 1
     session.modified = True
+
+    if _wants_json_response():
+        return jsonify(
+            ok=True,
+            cart_count=_cart_count(),
+            message="Item adicionado ao carrinho.",
+        )
+
     flash("Item adicionado ao carrinho.", "ok")
     return redirect(request.referrer or url_for("store.products"))
+
+
+@bp.get("/api/carrinho/contagem")
+def api_cart_count():
+    """Para sincronizar o número do carrinho no cabeçalho após navegação."""
+    return jsonify(cart_count=_cart_count())
 
 
 @bp.post("/carrinho/atualizar")

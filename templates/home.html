@@ -1,27 +1,43 @@
 {% extends "base.html" %}
+{% from "_macros.html" import product_image, amazon_stars, price_amazon %}
 {% block title %}Início{% endblock %}
 {% block content %}
-<section class="hero">
-  <h1>Tudo em plásticos para embalagem e indústria</h1>
-  <p>Fita de arquear, fita adesiva, filmes stretch, contrátil e embala tudo — com checkout que separa consumidor (NFC-e) e empresa (NF-e).</p>
+<section class="amz-hero">
+  <div class="amz-hero-inner">
+    <h1>Fitas e filmes plásticos para indústria e embalagem</h1>
+    <p>Fita de arquear, adesiva, filmes stretch, contrátil e embala tudo — envio em todo o Brasil.</p>
+  </div>
 </section>
-<h2 class="section-title">Destaques</h2>
-<div class="grid">
-  {% for p in featured %}
-  <article class="card">
-    <div class="card-img" aria-hidden="true">📦</div>
-    <div class="card-body">
-      {% if loop.first %}<span class="badge">Mais vendido</span>{% endif %}
-      <h3 class="card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
-      <p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.5rem;">{{ p.short_desc[:80] }}{% if p.short_desc|length > 80 %}…{% endif %}</p>
-      <div class="price">{{ p.price_brl() }}</div>
-      <form action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
-        <input type="hidden" name="qty" value="1">
-        <button type="submit" class="btn btn-primary btn-cart">Adicionar ao carrinho</button>
-      </form>
+
+<div class="amz-section">
+  <div class="amz-inner">
+    <div class="amz-section-panel">
+      <h2 class="amz-section-title">Destaques <a href="{{ url_for('store.products') }}">Ver mais</a></h2>
+      <div class="amz-grid">
+        {% for p in featured %}
+        <article class="amz-card">
+          <a class="amz-card-img-wrap" href="{{ url_for('store.product_detail', slug=p.slug) }}">
+            {{ product_image(p) }}
+          </a>
+          <div class="amz-card-body">
+            {% if loop.first %}
+            <span class="amz-badge">Mais vendido</span>
+            {% elif loop.index == 2 %}
+            <span class="amz-badge amz-badge--prime">Envio JCA</span>
+            {% endif %}
+            {% set sn = 3 + (p.id % 3) %}
+            {{ amazon_stars(sn) }}
+            <h3 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
+            {{ price_amazon(p.price_cents) }}
+            <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
+              <input type="hidden" name="qty" value="1">
+              <button type="submit" class="amz-btn-add jca-add-cart-btn">Adicionar ao carrinho</button>
+            </form>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
     </div>
-  </article>
-  {% endfor %}
+  </div>
 </div>
-<p style="margin-top:1.5rem;"><a href="{{ url_for('store.products') }}">Ver todos os produtos →</a></p>
 {% endblock %}

@@ -1,24 +1,41 @@
 {% extends "base.html" %}
+{% from "_macros.html" import product_image, amazon_stars, price_amazon %}
 {% block title %}{{ product.name }}{% endblock %}
 {% block content %}
-<div class="layout-split">
-  <div class="panel">
-    <div class="card-img" style="height:240px;border-radius:8px;margin-bottom:1rem;">📦</div>
-    <p style="color:var(--muted);margin:0 0 0.5rem;">{{ product.category }}</p>
-    <h1 style="margin:0 0 0.75rem;font-size:1.5rem;">{{ product.name }}</h1>
-    <div class="price" style="font-size:1.5rem;margin-bottom:1rem;">{{ product.price_brl() }}</div>
-    <p>{{ product.long_desc or product.short_desc }}</p>
+<div class="amz-inner amz-crumb">
+  <a href="{{ url_for('store.home') }}">JCA Store</a> ›
+  <a href="{{ url_for('store.products') }}">Produtos</a> ›
+  <span>{{ product.name }}</span>
+</div>
+
+<div class="amz-pdp">
+  <div class="amz-pdp-gallery">
+    {{ product_image(product, 'amz-card-img') }}
   </div>
-  <div class="panel">
-    <h2>Comprar</h2>
-    <form action="{{ url_for('store.add_to_cart', product_id=product.id) }}" method="post">
-      <div class="form-row">
-        <label for="qty">Quantidade</label>
-        <input id="qty" name="qty" type="number" min="1" value="1" style="max-width:120px;">
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">Adicionar ao carrinho</button>
-    </form>
-    <p style="margin-top:1rem;font-size:0.85rem;"><a href="{{ url_for('store.products') }}">← Voltar à lista</a></p>
+  <div>
+    <div class="amz-pdp-buy">
+      <p class="amz-pdp-cat">{{ product.category }}</p>
+      <h1 class="amz-pdp-title">{{ product.name }}</h1>
+      {% set sn = 3 + (product.id % 3) %}
+      {{ amazon_stars(sn) }}
+      <div class="amz-stock">Em estoque</div>
+      {{ price_amazon(product.price_cents) }}
+      <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=product.id) }}" method="post" id="jca-pdp-cart-form">
+        <div class="form-row">
+          <label for="qty">Quantidade</label>
+          <div class="jca-qty-stepper">
+            <button type="button" class="jca-qty-step" data-step="-1" aria-label="Diminuir quantidade">−</button>
+            <input id="qty" name="qty" type="number" min="1" value="1" class="jca-qty-input">
+            <button type="button" class="jca-qty-step" data-step="1" aria-label="Aumentar quantidade">+</button>
+          </div>
+        </div>
+        <button type="submit" class="amz-btn-add jca-add-cart-btn" style="border-radius:8px;">Adicionar ao carrinho</button>
+      </form>
+    </div>
+    <div class="amz-panel" style="margin-top:16px;">
+      <h2 style="margin:0 0 10px;font-size:16px;">Sobre este item</h2>
+      <p class="amz-pdp-desc" style="margin:0;">{{ product.long_desc or product.short_desc }}</p>
+    </div>
   </div>
 </div>
 {% endblock %}

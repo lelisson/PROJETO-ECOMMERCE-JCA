@@ -3,43 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}JCA Store{% endblock %} — Plásticos</title>
+  <title>{% block title %}JCA Store{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/store.css') }}">
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
 </head>
-<body>
-  <div class="top-bar">
-    <div class="top-bar-inner">
-      <span>Envio para todo o Brasil · {{ empresa_razao }}</span>
-      <span>CNPJ {{ empresa_cnpj }}</span>
+<body
+  class="amz-body"
+  data-api-cart-count="{{ url_for('store.api_cart_count') }}"
+  data-shipping-flat-cents="{{ shipping_flat_cents }}"
+  data-shipping-free-min-cents="{{ shipping_free_min_cents }}"
+>
+  <a class="amz-skip" href="#amz-main">Pular para o conteúdo principal</a>
+
+  <header class="amz-header" role="banner">
+    {# Faixa principal #131921 como na Amazon.com.br: logo | entrega | busca | conta / pedidos / carrinho #}
+    <div class="amz-navbelt">
+      <div class="amz-inner amz-navbelt-inner">
+        <div class="amz-navbelt-main">
+          <a class="amz-logo" href="{{ url_for('store.home') }}" aria-label="JCA Store página inicial">
+            <span class="amz-logo-text">
+              <span class="amz-logo-word">jca</span><span class="amz-logo-domain">.com.br</span>
+            </span>
+          </a>
+
+          <a class="amz-deliver" href="{{ url_for('store.products') }}" title="Ver produtos e frete">
+            <span class="amz-deliver-pin" aria-hidden="true">
+              <svg width="15" height="18" viewBox="0 0 15 18" fill="currentColor"><path d="M7.5 0C4.46 0 2 2.24 2 5c0 3.53 4.55 10.36 5.08 11.09a.5.5 0 00.84 0C8.45 15.36 13 8.53 13 5c0-2.76-2.46-5-5.5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
+            </span>
+            <span class="amz-deliver-copy">
+              <span class="amz-deliver-l1">Entregar em</span>
+              <span class="amz-deliver-l2">Brasil</span>
+            </span>
+          </a>
+
+          <div class="amz-search-wrap">
+            <form class="amz-search-form" action="{{ url_for('store.products') }}" method="get" role="search">
+              <label class="visually-hidden" for="amz-search-q">Pesquisar na JCA Store</label>
+              <div class="amz-search-left">
+                <select id="amz-search-dept" class="amz-search-select" name="categoria" aria-label="Todos os departamentos" title="Departamento">
+                  <option value="" {% if not request.args.get('categoria') %}selected{% endif %}>Todos</option>
+                  {% for c in nav_categories %}
+                  <option value="{{ c }}" {% if request.args.get('categoria') == c %}selected{% endif %}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <input id="amz-search-q" class="amz-search-input" type="search" name="q" placeholder="Pesquisar na JCA Store" value="{{ request.args.get('q', '') }}" autocomplete="off">
+              <button class="amz-search-btn" type="submit" aria-label="Pesquisar" title="Pesquisar">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              </button>
+            </form>
+          </div>
+
+          <div class="amz-nav-tools">
+            <div class="amz-nav-flag" aria-hidden="true" title="Brasil">
+              <span class="amz-flag-br"></span>
+            </div>
+            <a href="{{ url_for('store.products') }}" class="amz-tool">
+              <span class="amz-tool-l1">Olá, faça seu login</span>
+              <span class="amz-tool-l2">Contas e Listas <span class="amz-caret">▾</span></span>
+            </a>
+            <a href="{{ url_for('store.cart') }}" class="amz-tool amz-tool--orders">
+              <span class="amz-tool-l1">Devoluções</span>
+              <span class="amz-tool-l2">e Pedidos</span>
+            </a>
+            <a class="amz-cart" href="{{ url_for('store.cart') }}" aria-label="{% if cart_count %}Carrinho com {{ cart_count }} itens{% else %}Carrinho de compras{% endif %}">
+              <div class="amz-cart-stack">
+                <span class="amz-cart-count" aria-hidden="true">{{ cart_count }}</span>
+                <svg class="amz-cart-svg" width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><path fill="currentColor" d="M0 1.25h5.2l1.1 2.2H36.5v2.4H8.8l-2.1 12.4H34l2.2-14.8H7.5L6.4 1.25H0v0zm9.5 19.2a2.1 2.1 0 100 4.2 2.1 2.1 0 000-4.2zm16.2 0a2.1 2.1 0 100 4.2 2.1 2.1 0 000-4.2z"/></svg>
+              </div>
+              <span class="amz-cart-word">Carrinho</span>
+            </a>
+          </div>
+        </div>
+
+        <p class="amz-navbelt-corp">{{ empresa_razao }} · CNPJ {{ empresa_cnpj }}</p>
+      </div>
     </div>
-  </div>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="logo" href="{{ url_for('store.home') }}">JCA<span>Store</span></a>
-      <form class="search-form" action="{{ url_for('store.products') }}" method="get" role="search">
-        <input type="search" name="q" placeholder="Buscar fitas, filmes…" value="{{ request.args.get('q', '') }}" aria-label="Buscar">
-        <button type="submit">Buscar</button>
-      </form>
-      <nav class="nav-links">
-        <a href="{{ url_for('store.products') }}">Departamentos</a>
-        <a href="{{ url_for('store.cart') }}">Carrinho</a>
-      </nav>
+
+    <div class="amz-subnav">
+      <div class="amz-inner amz-subnav-inner">
+        <button type="button" class="amz-subnav-all" onclick="document.getElementById('amz-main').focus();">
+          <span class="amz-hamburger" aria-hidden="true"></span>
+          Todos
+        </button>
+        <nav class="amz-subnav-links" aria-label="Atalhos">
+          <a href="{{ url_for('store.products') }}">Ofertas do dia</a>
+          <a href="{{ url_for('store.products') }}">Mais vendidos</a>
+          <a href="{{ url_for('store.products', categoria='Fita de Arquear') }}">Fita de Arquear</a>
+          <a href="{{ url_for('store.products', categoria='Fita Adesiva') }}">Fita Adesiva</a>
+          <a href="{{ url_for('store.products', categoria='Filme Stretch') }}">Filme Stretch</a>
+          <a href="{{ url_for('store.products', categoria='Filme Contrátil') }}">Filme Contrátil</a>
+          <a href="{{ url_for('store.products', categoria='Filme Embala Tudo') }}">Embala Tudo</a>
+          <a href="{{ url_for('store.cart') }}">Carrinho</a>
+        </nav>
+      </div>
     </div>
   </header>
-  <main>
+
+  <div id="jca-toast-host" class="jca-toast-host" aria-live="polite" aria-atomic="true"></div>
+
+  <main id="amz-main" class="amz-main" tabindex="-1">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        {% for cat, msg in messages %}
-          <div class="flash {{ cat }}">{{ msg }}</div>
-        {% endfor %}
+        <div class="amz-inner amz-flash-wrap">
+          {% for cat, msg in messages %}
+            <div class="flash flash--{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
       {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
   </main>
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <p><strong>Catálogo inspirado em</strong> <a href="https://jcaplasticos.com.br/produtos/" style="color:#febd69">jcaplasticos.com.br</a> — fitas e filmes plásticos industriais.</p>
-      <p>Fiscal: pessoa física → NFC-e (cupom eletrônico); pessoa jurídica → NF-e. A autorização junto à SEFAZ integra-se ao seu ERP/certificado A1.</p>
+
+  <div class="amz-back-top">
+    <a class="amz-back-top-link" href="#">Voltar ao início</a>
+  </div>
+
+  <footer class="amz-footer jca-footer" role="contentinfo">
+    {# Conteúdo alinhado ao rodapé de https://jcaplasticos.com.br/produtos/ #}
+    <div class="amz-inner jca-footer-top">
+      <div class="jca-footer-intro">
+        <img class="jca-footer-logo" src="{{ url_for('static', filename='img/logo-jca-branca.png') }}" width="170" height="auto" alt="JCA Plásticos">
+        <p class="jca-footer-mission">Buscamos sempre atingir e superar as expectativas dos nossos clientes com responsabilidade e ética. Esse compromisso está profundamente atrelado ao crescimento da JCA.</p>
+      </div>
+      <div class="jca-footer-social-wrap">
+        <ul class="jca-footer-social" aria-label="Redes sociais">
+          <li><a href="https://www.facebook.com/jcaplasticosoficial" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+          <li><a href="https://www.instagram.com/jcaplasticos/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+          <li><a href="https://br.pinterest.com/jcaplasticos/" target="_blank" rel="noopener noreferrer">Pinterest</a></li>
+          <li><a href="https://www.linkedin.com/company/jca-plasticos/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="amz-inner jca-footer-columns">
+      <div class="jca-footer-col">
+        <h3 class="amz-footer-title">Contato</h3>
+        <ul class="amz-footer-list jca-footer-contact">
+          <li><a href="https://www.google.com/maps/place/JCA+PLASTICOS/@-10.845851,-37.070266,15z/data=!4m6!3m5!1s0x7054d7177d9bb65:0xf4f8349d5024bacc!8m2!3d-10.8457191!4d-37.0700437!16s%2Fg%2F11h2cb7g1k?entry=ttu" target="_blank" rel="noopener noreferrer">Av. Perimetral A, Galpão 11 - Marcos Freire I, Nossa Sra. do Socorro - SE, 49160-000.</a></li>
+          <li><a href="https://api.whatsapp.com/send?l=pt&amp;phone=557932514243" target="_blank" rel="noopener noreferrer">(79) 3251-4243</a></li>
+          <li><a href="mailto:contato@jcaplasticos.com.br">contato@jcaplasticos.com.br</a></li>
+        </ul>
+      </div>
+      <div class="jca-footer-col">
+        <h3 class="amz-footer-title">Nossos Produtos</h3>
+        <ul class="amz-footer-list">
+          <li><a href="{{ url_for('store.product_detail', slug='fita-de-arquear-pet') }}">Fita de Arquear</a></li>
+          <li><a href="{{ url_for('store.product_detail', slug='fita-adesiva') }}">Fita Adesiva</a></li>
+          <li><a href="{{ url_for('store.product_detail', slug='filme-contratil') }}">Filme Contratil</a></li>
+          <li><a href="{{ url_for('store.product_detail', slug='filme-stretch') }}">Filme Stretch</a></li>
+          <li><a href="{{ url_for('store.product_detail', slug='filme-embala-tudo') }}">Filme Embala Tudo</a></li>
+        </ul>
+      </div>
+      <div class="jca-footer-col">
+        <h3 class="amz-footer-title">Artigos Recentes</h3>
+        <ul class="amz-footer-list jca-footer-articles">
+          <li><a href="https://jcaplasticos.com.br/filme-stretch-pode-proteger-seus-produtos-2/" target="_blank" rel="noopener noreferrer">Como o Filme Stretch Pode Proteger Seus Produtos</a> <span class="jca-footer-date">31 agosto 2025</span></li>
+          <li><a href="https://jcaplasticos.com.br/filme-stretch-solucoes-versateis/" target="_blank" rel="noopener noreferrer">Filme Stretch: Soluções Versáteis para Embalagem</a> <span class="jca-footer-date">30 agosto 2025</span></li>
+        </ul>
+      </div>
+      <div class="jca-footer-col">
+        <h3 class="amz-footer-title">Solicite um Orçamento</h3>
+        <p class="jca-footer-phone"><a href="https://api.whatsapp.com/send?l=pt&amp;phone=5579999697570" target="_blank" rel="noopener noreferrer">(79) 99969-7570</a></p>
+        <p class="jca-footer-hours">Horário de Funcionamento:<br>De segunda a sexta das 07:30hs às 17:30hs</p>
+        <p><a class="jca-footer-btn-outline" href="https://jcaplasticos.com.br/orcamento/" target="_blank" rel="noopener noreferrer">Solicite Online</a></p>
+        <p class="jca-footer-store-note">Compre também nesta loja: <a href="{{ url_for('store.products') }}">catálogo online</a> (CNPJ da loja: {{ empresa_cnpj }})</p>
+      </div>
+    </div>
+
+    <div class="jca-footer-address-bar">
+      <div class="amz-inner">
+        <p>Av. Perimetral A, Galpão 11 - Marcos Freire I, Nossa Sra. do Socorro - SE, 49160-000 — JCA INDUSTRIA DE MATERIAL PLASTICO LTDA — CNPJ: 26.295.687/0001-23</p>
+      </div>
+    </div>
+
+    <div class="amz-footer-bottom jca-footer-bottom-legal">
+      <div class="amz-inner">
+        <p class="amz-footer-brand">Todos os direitos reservados © 2026 <a href="https://jcaplasticos.com.br/" rel="noopener noreferrer">JCA Plásticos</a></p>
+        <ul class="jca-footer-legal-links">
+          <li><a href="https://jcaplasticos.com.br/politica-de-privacidade/" rel="noopener noreferrer">Política de Privacidade</a></li>
+          <li><a href="https://jcaplasticos.com.br/termos-de-uso/" rel="noopener noreferrer">Termos de Uso</a></li>
+        </ul>
+        <p class="amz-footer-small">Imagens dos produtos reproduzem materiais de <a href="https://jcaplasticos.com.br/produtos/" rel="noopener noreferrer">jcaplasticos.com.br</a>. Navegação inspirada em <a href="https://www.amazon.com.br/ref=nav_logo" rel="noopener noreferrer">Amazon.com.br</a>.</p>
+      </div>
     </div>
   </footer>
 </body>
