@@ -22,28 +22,32 @@
         <button type="submit" class="amz-btn-add" style="width:auto;border-radius:8px;">Filtrar</button>
       </form>
 
-      <div class="amz-grid">
+      <ul class="amz-grid" role="list">
         {% for p in items %}
-        <article class="amz-card">
-          <a class="amz-card-img-wrap" href="{{ url_for('store.product_detail', slug=p.slug) }}">
-            {{ product_image(p) }}
-          </a>
-          <div class="amz-card-body">
-            {% set sn = 3 + (p.id % 3) %}
-            {{ amazon_stars(sn) }}
-            <h2 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h2>
-            <p class="amz-card-cat">{{ p.category }}</p>
-            {{ price_amazon(p.price_cents) }}
-            <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
-              <input type="hidden" name="qty" value="1">
-              <button type="submit" class="amz-btn-add jca-add-cart-btn">Adicionar ao carrinho</button>
-            </form>
-          </div>
-        </article>
+        <li class="amz-grid__cell">
+          <article class="amz-card" itemscope itemtype="https://schema.org/Product">
+            <a class="amz-card-img-wrap" href="{{ url_for('store.product_detail', slug=p.slug) }}">
+              {{ product_image(p, itemprop_image=true) }}
+            </a>
+            <div class="amz-card-body">
+              <div class="amz-card-lead">
+                {% set sn = 3 + (p.id % 3) %}
+                {{ amazon_stars(sn) }}
+              </div>
+              <h2 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}" itemprop="name">{{ p.name }}</a></h2>
+              <p class="amz-card-cat"><span itemprop="category">{{ p.category }}</span></p>
+              {{ price_amazon(p.price_cents, schema_offer=true) }}
+              <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="amz-btn-add jca-add-cart-btn">Adicionar ao carrinho</button>
+              </form>
+            </div>
+          </article>
+        </li>
         {% else %}
-        <p>Nenhum produto encontrado.</p>
+        <li class="amz-grid__empty" role="status"><p>Nenhum produto encontrado.</p></li>
         {% endfor %}
-      </div>
+      </ul>
     </div>
   </div>
 </div>

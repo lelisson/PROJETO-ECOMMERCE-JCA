@@ -13,30 +13,35 @@
   <div class="amz-inner">
     <div class="amz-section-panel">
       <h2 class="amz-section-title">Destaques <a href="{{ url_for('store.products') }}">Ver mais</a></h2>
-      <div class="amz-grid">
+      <ul class="amz-grid" role="list">
         {% for p in featured %}
-        <article class="amz-card">
-          <a class="amz-card-img-wrap" href="{{ url_for('store.product_detail', slug=p.slug) }}">
-            {{ product_image(p) }}
-          </a>
-          <div class="amz-card-body">
-            {% if loop.first %}
-            <span class="amz-badge">Mais vendido</span>
-            {% elif loop.index == 2 %}
-            <span class="amz-badge amz-badge--prime">Envio JCA</span>
-            {% endif %}
-            {% set sn = 3 + (p.id % 3) %}
-            {{ amazon_stars(sn) }}
-            <h3 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
-            {{ price_amazon(p.price_cents) }}
-            <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
-              <input type="hidden" name="qty" value="1">
-              <button type="submit" class="amz-btn-add jca-add-cart-btn">Adicionar ao carrinho</button>
-            </form>
-          </div>
-        </article>
+        <li class="amz-grid__cell">
+          <article class="amz-card" itemscope itemtype="https://schema.org/Product">
+            <a class="amz-card-img-wrap" href="{{ url_for('store.product_detail', slug=p.slug) }}">
+              {{ product_image(p, itemprop_image=true) }}
+            </a>
+            <div class="amz-card-body">
+              <div class="amz-card-lead">
+                {% if loop.first %}
+                <span class="amz-badge">Mais vendido</span>
+                {% elif loop.index == 2 %}
+                <span class="amz-badge amz-badge--prime">Envio JCA</span>
+                {% endif %}
+                {% set sn = 3 + (p.id % 3) %}
+                {{ amazon_stars(sn) }}
+              </div>
+              <h3 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}" itemprop="name">{{ p.name }}</a></h3>
+              <p class="amz-card-cat amz-card-cat--placeholder" aria-hidden="true">&nbsp;</p>
+              {{ price_amazon(p.price_cents, schema_offer=true) }}
+              <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="amz-btn-add jca-add-cart-btn">Adicionar ao carrinho</button>
+              </form>
+            </div>
+          </article>
+        </li>
         {% endfor %}
-      </div>
+      </ul>
     </div>
   </div>
 </div>

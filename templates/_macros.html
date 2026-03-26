@@ -1,9 +1,9 @@
 {# Estilo de vitrine inspirado em marketplaces tipo Amazon — sem uso de marca registrada. #}
-{% macro product_image(product, class='amz-card-img') %}
+{% macro product_image(product, class='amz-card-img', itemprop_image=false) %}
   {% if product.image_url %}
-  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="{{ class }}" loading="lazy" width="240" height="240">
+  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="{{ class }}" loading="lazy" width="240" height="240"{% if itemprop_image %} itemprop="image"{% endif %}>
   {% else %}
-  <img src="{{ url_for('static', filename='img/placeholder-produto.svg') }}" alt="" class="{{ class }}" loading="lazy" width="240" height="240">
+  <img src="{{ url_for('static', filename='img/placeholder-produto.svg') }}" alt="" class="{{ class }}" loading="lazy" width="240" height="240"{% if itemprop_image %} itemprop="image"{% endif %}>
   {% endif %}
 {% endmacro %}
 
@@ -16,8 +16,13 @@
   </div>
 {% endmacro %}
 
-{% macro price_amazon(cents) %}
-  <div class="amz-price" itemprop="price">
+{% macro price_amazon(cents, schema_offer=false) %}
+  <div class="amz-price"{% if schema_offer %} itemprop="offers" itemscope itemtype="https://schema.org/Offer"{% endif %}>
+    {% if schema_offer %}
+    <meta itemprop="priceCurrency" content="BRL">
+    <meta itemprop="price" content="{{ '%.2f'|format(cents / 100.0) }}">
+    <link itemprop="availability" href="https://schema.org/InStock">
+    {% endif %}
     <span class="amz-price-symbol">R$</span>
     <span class="amz-price-whole">{{ (cents // 100) }}</span>
     <span class="amz-price-dec">,{{ "%02d"|format(cents % 100) }}</span>
