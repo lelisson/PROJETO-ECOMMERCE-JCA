@@ -108,16 +108,17 @@ a:hover {
   row-gap: 8px;
 }
 
-/* Logo: palavra + .com.br como na Amazon */
+/* Logo JCA (mesmo asset do rodapé: logo-jca-branca.png) */
 .amz-logo {
-  display: block;
+  display: flex;
+  align-items: flex-end;
   color: #fff !important;
   text-decoration: none !important;
-  padding: 4px 6px 2px;
+  padding: 2px 6px;
   margin: 0 4px 0 0;
   border: 1px solid transparent;
   border-radius: 2px;
-  line-height: 0.95;
+  line-height: 0;
 }
 
 .amz-logo:hover {
@@ -125,26 +126,13 @@ a:hover {
   text-decoration: none !important;
 }
 
-.amz-logo-text {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 0;
-}
-
-.amz-logo-word {
-  font-size: 32px;
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  text-transform: lowercase;
-  color: #fff;
-}
-
-.amz-logo-domain {
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-  padding-bottom: 3px;
-  margin-left: 1px;
+.amz-header-logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  object-position: left bottom;
 }
 
 /* Entregar em — bloco com pin */
@@ -1321,6 +1309,11 @@ a:hover {
 
   .amz-navbelt-main {
     grid-template-columns: 1fr;
+  }
+
+  .amz-header-logo {
+    height: 32px;
+    max-width: 132px;
   }
 
   .amz-logo {
