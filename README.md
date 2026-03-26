@@ -16,10 +16,15 @@ O endereço público do ambiente de **pré-visualização** (acompanhar o desenv
 
 **Primeira vez — ativar o link**
 
-1. Crie uma conta em [Render](https://render.com) (login com GitHub).
-2. No painel: **New → Blueprint** → escolha o repositório **PROJETO-ECOMMERCE-JCA**.
-3. Confirme o deploy usando o arquivo [`render.yaml`](render.yaml) da raiz. O primeiro build leva alguns minutos.
-4. Quando o status ficar **Live**, o link da tabela acima abre o site. Cada **push** na branch conectada gera um novo deploy (você acompanha as mudanças visualmente).
+Com a conta Render aberta no navegador, use **um clique** (o GitHub precisa autorizar o app Render no repositório, se ainda não fez):
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/lelisson/PROJETO-ECOMMERCE-JCA)
+
+Link direto (mesmo efeito): [render.com/deploy?repo=https://github.com/lelisson/PROJETO-ECOMMERCE-JCA](https://render.com/deploy?repo=https://github.com/lelisson/PROJETO-ECOMMERCE-JCA)
+
+Na tela do Render, confira o serviço definido pelo [`render.yaml`](render.yaml) e clique para aplicar. O primeiro build leva alguns minutos; quando ficar **Live**, o link da tabela acima deve abrir o site. Cada **push** na `main` gera um novo deploy.
+
+**Alternativa manual:** [Dashboard](https://dashboard.render.com) → **New → Blueprint** → repositório **PROJETO-ECOMMERCE-JCA**.
 
 Se o Render avisar que o nome do serviço `projeto-ecommerce-jca` já existe em outra conta, escolha outro nome no painel; o endereço será `https://<nome-que-você-definir>.onrender.com` — atualize o link neste README para bater com o domínio mostrado no dashboard.
 
