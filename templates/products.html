@@ -34,7 +34,9 @@
                 {% set sn = 3 + (p.id % 3) %}
                 {{ amazon_stars(sn) }}
               </div>
-              <h2 class="amz-card-title"><a href="{{ url_for('store.product_detail', slug=p.slug) }}" itemprop="name">{{ p.name }}</a></h2>
+              <h2 class="amz-card-title">
+                <a href="{{ url_for('store.product_detail', slug=p.slug) }}" itemprop="url"><span itemprop="name">{{ p.name }}</span></a>
+              </h2>
               <p class="amz-card-cat"><span itemprop="category">{{ p.category }}</span></p>
               {{ price_amazon(p.price_cents, schema_offer=true) }}
               <form class="jca-add-cart" action="{{ url_for('store.add_to_cart', product_id=p.id) }}" method="post">

@@ -31,9 +31,9 @@ html {
 
 body.amz-body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--amz-text);
   background: var(--amz-bg-page);
   min-height: 100vh;
@@ -86,6 +86,10 @@ a:hover {
 /* —— Cabeçalho estilo Amazon.com.br (#131921 + busca + ferramentas) —— */
 .amz-header {
   color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
 }
 
 .amz-navbelt {
@@ -563,8 +567,9 @@ a:hover {
 .amz-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px 12px;
+  gap: 12px 14px;
   align-items: stretch;
+  overflow: visible;
 }
 
 @media (min-width: 900px) {
@@ -574,20 +579,29 @@ a:hover {
 }
 
 .amz-card {
+  position: relative;
+  z-index: 0;
   background: var(--amz-card-bg);
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 12px 10px 16px;
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   min-width: 0;
+  transform-origin: center center;
+  transition:
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.35s ease,
+    border-color 0.2s ease;
 }
 
 .amz-card:hover {
+  z-index: 2;
+  transform: scale(1.08);
   border-color: var(--amz-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
 }
 
 .amz-card-img-wrap {
@@ -610,19 +624,14 @@ a:hover {
   width: auto;
   height: auto;
   object-fit: contain;
-  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.amz-card:hover .amz-card-img {
-  transform: scale(1.07);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .amz-card-img {
+  .amz-card {
     transition: none;
   }
 
-  .amz-card:hover .amz-card-img {
+  .amz-card:hover {
     transform: none;
   }
 }
@@ -681,14 +690,15 @@ a:hover {
 
 .amz-card-title {
   margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.35;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: calc(1.35em * 2);
+  min-height: calc(1.45em * 2);
 }
 
 .amz-card-title a {
@@ -701,11 +711,11 @@ a:hover {
 }
 
 .amz-card-cat {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--amz-muted);
   margin: 0 0 8px;
   min-height: 1.35em;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .amz-card-cat--placeholder {
@@ -714,26 +724,57 @@ a:hover {
 }
 
 .amz-price {
+  margin: 0;
   margin-top: auto;
   margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
 }
 
-.amz-price-symbol {
-  font-size: 13px;
+.amz-price-currency {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--amz-muted);
+  text-decoration: none;
+  border-bottom: none;
+  cursor: inherit;
+  margin-right: 2px;
   vertical-align: top;
   position: relative;
-  top: 2px;
+  top: 4px;
+}
+
+/* Carrinho / trechos legados que ainda usam .amz-price-symbol */
+.amz-price-symbol {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--amz-muted);
+  margin-right: 2px;
+  vertical-align: top;
+  position: relative;
+  top: 4px;
+}
+
+.amz-price-amount {
+  font-weight: 700;
+}
+
+.amz-price-data {
+  text-decoration: none;
+  color: inherit;
 }
 
 .amz-price-whole {
-  font-size: 22px;
-  font-weight: 400;
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .amz-price-dec {
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 1rem;
+  font-weight: 600;
   vertical-align: top;
+  position: relative;
+  top: 2px;
 }
 
 .amz-btn-add {

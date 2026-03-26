@@ -17,14 +17,18 @@
 {% endmacro %}
 
 {% macro price_amazon(cents, schema_offer=false) %}
-  <div class="amz-price"{% if schema_offer %} itemprop="offers" itemscope itemtype="https://schema.org/Offer"{% endif %}>
+  <p class="amz-price"{% if schema_offer %} itemprop="offers" itemscope itemtype="https://schema.org/Offer"{% endif %}>
     {% if schema_offer %}
     <meta itemprop="priceCurrency" content="BRL">
     <meta itemprop="price" content="{{ '%.2f'|format(cents / 100.0) }}">
     <link itemprop="availability" href="https://schema.org/InStock">
     {% endif %}
-    <span class="amz-price-symbol">R$</span>
-    <span class="amz-price-whole">{{ (cents // 100) }}</span>
-    <span class="amz-price-dec">,{{ "%02d"|format(cents % 100) }}</span>
-  </div>
+    <span class="visually-hidden">Preço de venda:</span>
+    <abbr class="amz-price-currency" title="Real brasileiro">R$</abbr>
+    <strong class="amz-price-amount">
+      <data class="amz-price-data" value="{{ '%.2f'|format(cents / 100.0) }}">
+        <span class="amz-price-whole">{{ (cents // 100) }}</span><span class="amz-price-dec">,{{ "%02d"|format(cents % 100) }}</span>
+      </data>
+    </strong>
+  </p>
 {% endmacro %}
