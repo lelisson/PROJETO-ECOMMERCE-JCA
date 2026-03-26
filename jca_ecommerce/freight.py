@@ -1,5 +1,6 @@
 """
 Cálculo de frete por distância (demonstração).
+Origem: endereço da filial de venda / e-commerce (CNPJ 26.295.687/0002-04), Nossa Sra. do Socorro — SE.
 Usa OSRM público (OpenStreetMap) para rota rodoviária; se falhar, Haversine + fator de correção.
 R$ 0,30 por km (30 centavos de real por quilômetro).
 """
@@ -13,9 +14,18 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-# JCA — Nossa Sra. do Socorro, SE (coordenadas aproximadas do endereço da loja)
-STORE_LAT = -10.8457191
-STORE_LON = -37.0700437
+# Filial e-commerce (CNPJ 26.295.687/0002-04) — mesmo polo da loja no catálogo online
+STORE_ORIGIN_ADDRESS_QUERY = (
+    "Av. Perimetral A, Galpão 11, Marcos Freire I, "
+    "Nossa Senhora do Socorro, Sergipe, Brasil"
+)
+STORE_ORIGIN_CEP_LOGRADOURO = "49160-970"  # referência ViaCEP na cidade (área industrial próxima)
+
+# Fallback se geocoding da origem falhar (mapa JCA / região Perimetral)
+STORE_LAT_FALLBACK = -10.8457191
+STORE_LON_FALLBACK = -37.0700437
+
+_cached_store_coords: tuple[float, float] | None = None
 
 # R$ 0,30 / km → 30 centavos por km
 FREIGHT_CENTS_PER_KM = 30
@@ -24,6 +34,41 @@ FREIGHT_CENTS_PER_KM = 30
 HAVERSINE_ROAD_FACTOR = 1.28
 
 USER_AGENT = "JCA-Ecommerce/1.0 (simulacao-frete; contato@jcaplasticos.com.br)"
+
+
+def geocode_freeform(query: str) -> tuple[float, float] | None:
+    params = urllib.parse.urlencode({"q": query, "format": "json", "limit": "1"})
+    url = f"https://nominatim.openstreetmap.org/search?{params}"
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            arr = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, OSError, ValueError, json.JSONDecodeError):
+        return None
+    if not arr:
+        return None
+    try:
+        return float(arr[0]["lat"]), float(arr[0]["lon"])
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def get_store_coordinates() -> tuple[float, float]:
+    """Ponto de origem do frete = endereço da filial CNPJ 26.295.687/0002-04 (geocodificado)."""
+    global _cached_store_coords
+    if _cached_store_coords is not None:
+        return _cached_store_coords
+    coords = geocode_freeform(STORE_ORIGIN_ADDRESS_QUERY)
+    if coords is None:
+        alt = geocode_freeform(
+            f"{STORE_ORIGIN_CEP_LOGRADOURO}, {STORE_ORIGIN_ADDRESS_QUERY}"
+        )
+        coords = alt
+    if coords is None:
+        _cached_store_coords = (STORE_LAT_FALLBACK, STORE_LON_FALLBACK)
+    else:
+        _cached_store_coords = coords
+    return _cached_store_coords
 
 
 def _only_digits_cep(s: str) -> str:
@@ -124,10 +169,11 @@ def calculate_freight_for_cep(cep_raw: str) -> dict:
         return {"ok": False, "error": "Não foi possível geolocalizar o endereço (tente outro CEP)."}
 
     lat2, lon2 = coords
-    km = osrm_driving_km(STORE_LAT, STORE_LON, lat2, lon2)
+    lat1, lon1 = get_store_coordinates()
+    km = osrm_driving_km(lat1, lon1, lat2, lon2)
     mode = "osrm"
     if km is None or km <= 0:
-        km = haversine_km(STORE_LAT, STORE_LON, lat2, lon2) * HAVERSINE_ROAD_FACTOR
+        km = haversine_km(lat1, lon1, lat2, lon2) * HAVERSINE_ROAD_FACTOR
         mode = "haversine"
 
     label = f"{via.get('logradouro', '') or ''}, {city}/{state}".strip(", ")
@@ -139,4 +185,5 @@ def calculate_freight_for_cep(cep_raw: str) -> dict:
         "distance_km": round(km, 2),
         "mode": mode,
         "address_label": label,
+        "origin_label": "Filial JCA (CNPJ 26.295.687/0002-04), Nossa Senhora do Socorro — SE",
     }

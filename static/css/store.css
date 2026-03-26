@@ -975,6 +975,14 @@ a:hover {
   border-bottom: 1px solid var(--amz-border);
 }
 
+.jca-cart-frete-note {
+  font-size: 14px;
+  color: var(--amz-muted);
+  margin: -8px 0 16px;
+  max-width: 720px;
+  line-height: 1.45;
+}
+
 .amz-cart-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -1155,6 +1163,13 @@ a:hover {
   font-size: 13px;
   color: var(--amz-muted);
   margin-top: 8px !important;
+}
+
+.jca-frete-origin {
+  font-size: 13px;
+  color: var(--amz-text);
+  margin: 0 0 10px;
+  line-height: 1.4;
 }
 
 .jca-payment-fieldset {

@@ -8,6 +8,6 @@ class Config:
         "sqlite:///" + os.path.join(os.path.abspath(os.path.dirname(__file__)), "instance", "jca_store.db"),
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # Filial de venda / e-commerce (informado pelo cliente)
+    # Filial de venda / e-commerce (CNPJ) — origem do frete no checkout coincide com esta filial
     EMPRESA_RAZAO = "JCA INDUSTRIA DE MATERIAL PLASTICO LTDA"
     EMPRESA_CNPJ = "26.295.687/0002-04"

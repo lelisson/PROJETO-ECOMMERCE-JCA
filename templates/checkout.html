@@ -60,7 +60,7 @@
 
       <div class="jca-step jca-step--hidden" data-checkout-step="2" hidden>
         <h3 class="jca-step-title">2. Retirada ou frete</h3>
-        <p class="jca-step-hint">Escolha retirar na loja JCA (sem frete) ou calcular entrega pela distância do seu CEP até a loja (R$ 0,30 por km).</p>
+        <p class="jca-step-hint">Retirada na filial (CNPJ 26.295.687/0002-04, Socorro — SE), sem frete. Ou calcule entrega pela distância do seu CEP até esse endereço (R$ 0,30 por km).</p>
         <input type="hidden" name="delivery_mode" id="delivery_mode" value="{{ form.get('delivery_mode','retirada') }}">
 
         <div class="jca-choice-row">
@@ -75,7 +75,7 @@
         <div class="jca-freight-panel" id="jca-freight-panel" hidden>
           <div class="jca-freight-inner">
             <h4 class="jca-freight-title">Calculadora de frete</h4>
-            <p class="jca-freight-desc">Usamos o CEP informado acima e a rota até <strong>Nossa Sra. do Socorro — SE</strong> (loja JCA). Distância via OpenStreetMap / OSRM quando disponível.</p>
+            <p class="jca-freight-desc">Origem do cálculo: <strong>filial JCA (CNPJ 26.295.687/0002-04)</strong>, Av. Perimetral A, Galpão 11 — Marcos Freire I, Nossa Senhora do Socorro — SE. Distância até o seu CEP via OpenStreetMap / OSRM quando disponível.</p>
             <button type="button" class="amz-btn-add jca-freight-run" id="jca-freight-run" style="width:auto;border-radius:8px;margin-top:8px;">
               Calcular frete agora
             </button>

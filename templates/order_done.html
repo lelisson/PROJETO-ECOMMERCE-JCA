@@ -10,21 +10,17 @@
     <p>Obrigado, <strong>{{ order.name }}</strong>. Pedido <strong>#{{ order.id }}</strong>.</p>
 
     <div class="jca-order-codes">
-      <div class="jca-code-box">
-        <span class="jca-code-label">Código para retirada na loja</span>
-        <code class="jca-code-value">{{ order.pickup_code }}</code>
-        <span class="jca-code-hint">Apresente na JCA ao buscar o pedido (simulação).</span>
-      </div>
       {% if order.delivery_mode == 'entrega' %}
       <div class="jca-code-box">
-        <span class="jca-code-label">Etiqueta / rastreio (envio)</span>
+        <span class="jca-code-label">Etiqueta de envio</span>
         <code class="jca-code-value">{{ order.tracking_code }}</code>
-        <span class="jca-code-hint">Referência simulada para recebimento em casa.</span>
+        <span class="jca-code-hint">Referência simulada para entrega no endereço informado.</span>
       </div>
       {% else %}
-      <div class="jca-code-box jca-code-box--muted">
-        <span class="jca-code-label">Entrega</span>
-        <p class="jca-code-hint" style="margin:0;">Retirada na loja — sem etiqueta de envio.</p>
+      <div class="jca-code-box">
+        <span class="jca-code-label">Etiqueta de retirada na loja</span>
+        <code class="jca-code-value">{{ order.pickup_code }}</code>
+        <span class="jca-code-hint">Apresente na filial JCA ao retirar o pedido (simulação).</span>
       </div>
       {% endif %}
     </div>

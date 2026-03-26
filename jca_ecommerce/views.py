@@ -34,9 +34,6 @@ PAYMENT_LABELS = {
     "boleto": "Boleto bancário",
 }
 
-SHIPPING_FREE_MIN_CENTS = 20000
-SHIPPING_FLAT_CENTS = 1590
-
 
 @bp.route("/health")
 def health():
@@ -103,8 +100,6 @@ def inject_company():
         "empresa_cnpj": current_app.config.get("EMPRESA_CNPJ", ""),
         "cart_count": _cart_count(),
         "nav_categories": nav_categories,
-        "shipping_flat_cents": SHIPPING_FLAT_CENTS,
-        "shipping_free_min_cents": SHIPPING_FREE_MIN_CENTS,
     }
 
 
@@ -232,15 +227,11 @@ def update_cart():
 @bp.route("/carrinho")
 def cart():
     lines, subtotal = _cart_lines()
-    shipping = 0 if subtotal >= SHIPPING_FREE_MIN_CENTS else SHIPPING_FLAT_CENTS
-    total = subtotal + shipping
     return render_template(
         "cart.html",
         lines=lines,
         subtotal_cents=subtotal,
-        shipping_cents=shipping,
-        total_cents=total,
-        free_ship_remaining=max(0, SHIPPING_FREE_MIN_CENTS - subtotal),
+        total_cents=subtotal,
     )
 
 
@@ -317,7 +308,10 @@ def checkout():
 
         total = subtotal + shipping
         ft = tipo_fiscal_para_cliente(tipo)
-        pickup_code = f"RET-{secrets.token_hex(4).upper()}"
+        if delivery_mode == "entrega":
+            pickup_for_order = ""
+        else:
+            pickup_for_order = f"RET-{secrets.token_hex(4).upper()}"
 
         order = Order(
             customer_type=tipo.value,
@@ -334,12 +328,13 @@ def checkout():
             delivery_mode=delivery_mode,
             freight_km=freight_km_val,
             payment_method=pay_method,
-            pickup_code=pickup_code,
+            pickup_code=pickup_for_order,
             tracking_code="",
         )
         db.session.add(order)
         db.session.flush()
-        order.tracking_code = f"ETQ-BR-JCA-{order.id:06d}-{secrets.token_hex(3).upper()}"
+        if delivery_mode == "entrega":
+            order.tracking_code = f"ETQ-BR-JCA-{order.id:06d}-{secrets.token_hex(3).upper()}"
         for line in lines:
             db.session.add(
                 OrderItem(

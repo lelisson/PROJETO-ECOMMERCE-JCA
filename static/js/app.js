@@ -161,9 +161,6 @@
     var hint = qs(".jca-cart-live-hint");
     if (hint) hint.hidden = false;
 
-    var freeMin = parseInt(document.body.getAttribute("data-shipping-free-min-cents") || "20000", 10);
-    var flatShip = parseInt(document.body.getAttribute("data-shipping-flat-cents") || "1590", 10);
-
     function recompute() {
       var rows = qsa(".jca-cart-row", form);
       var subtotal = 0;
@@ -183,28 +180,8 @@
       if (wEl) wEl.textContent = sp.whole.toLocaleString("pt-BR");
       if (dEl) dEl.textContent = "," + sp.dec;
 
-      var shipping = subtotal >= freeMin || subtotal === 0 ? 0 : flatShip;
-      var shipEl = qs("#jca-live-shipping");
-      if (shipEl) {
-        if (subtotal === 0) shipEl.textContent = "—";
-        else if (shipping === 0) shipEl.textContent = "GRÁTIS";
-        else shipEl.textContent = formatBRL(shipping);
-      }
-
-      var total = subtotal + shipping;
       var totEl = qs("#jca-live-total");
-      if (totEl) totEl.textContent = formatBRL(total);
-
-      var msg = qs("#jca-live-free-msg");
-      var gap = qs("#jca-live-free-gap");
-      if (msg && gap) {
-        if (subtotal >= freeMin || subtotal === 0) {
-          msg.hidden = true;
-        } else {
-          msg.hidden = false;
-          gap.textContent = formatBRL(freeMin - subtotal);
-        }
-      }
+      if (totEl) totEl.textContent = formatBRL(subtotal);
     }
 
     bindQtySteppers(form);
@@ -375,14 +352,21 @@
               if (freightStatus) freightStatus.textContent = "";
               if (freightResult) {
                 freightResult.hidden = false;
+                var ori =
+                  res.data.origin_label ?
+                    "<p class='jca-frete-origin'><strong>Origem do cálculo:</strong> " +
+                    res.data.origin_label +
+                    "</p>" :
+                    "";
                 freightResult.innerHTML =
+                  ori +
                   "<p><strong>Distância estimada:</strong> " +
                   res.data.distance_km +
                   " km (" +
                   (res.data.mode === "osrm" ? "rota" : "estimativa") +
                   ")</p><p><strong>Frete:</strong> " +
                   formatBRL(freightCents) +
-                  "</p><p class='jca-frete-addr'>" +
+                  "</p><p class='jca-frete-addr'><strong>Destino (CEP):</strong> " +
                   (res.data.address_label || "") +
                   "</p>";
               }
