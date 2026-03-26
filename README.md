@@ -6,6 +6,29 @@ Loja virtual em **Python (Flask)** para a **JCA Indústria de Material Plástico
 
 ---
 
+## Visualizar o site de qualquer máquina (demo na internet)
+
+O endereço público do ambiente de **pré-visualização** (acompanhar o desenvolvimento no navegador, celular ou outro PC) é:
+
+| Demo (Render) | Link |
+|----------------|------|
+| **Loja ao vivo** | **[https://projeto-ecommerce-jca.onrender.com](https://projeto-ecommerce-jca.onrender.com)** |
+
+**Primeira vez — ativar o link**
+
+1. Crie uma conta em [Render](https://render.com) (login com GitHub).
+2. No painel: **New → Blueprint** → escolha o repositório **PROJETO-ECOMMERCE-JCA**.
+3. Confirme o deploy usando o arquivo [`render.yaml`](render.yaml) da raiz. O primeiro build leva alguns minutos.
+4. Quando o status ficar **Live**, o link da tabela acima abre o site. Cada **push** na branch conectada gera um novo deploy (você acompanha as mudanças visualmente).
+
+Se o Render avisar que o nome do serviço `projeto-ecommerce-jca` já existe em outra conta, escolha outro nome no painel; o endereço será `https://<nome-que-você-definir>.onrender.com` — atualize o link neste README para bater com o domínio mostrado no dashboard.
+
+**Plano gratuito:** o serviço pode “dormir” após inatividade; a primeira visita após isso pode levar ~1 minuto para acordar.
+
+**Compartilhar o que está rodando só no seu PC (sem deploy):** com o site em `python run.py`, instale o [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/) e rode `cloudflared tunnel --url http://127.0.0.1:8080` — será exibido um URL temporário `https://....trycloudflare.com` válido enquanto o comando estiver aberto.
+
+---
+
 ## Requisitos
 
 - Python **3.10+** (recomendado 3.11 ou 3.12)
@@ -97,10 +120,12 @@ Dados da empresa (razão social, CNPJ) estão em `config.py` e podem ser ajustad
 
 ## Produção e deploy
 
-Este repositório é pensado para **desenvolvimento e demonstração local**. Para colocar na internet é necessário um **hospedeiro** (VPS, Railway, Render, etc.) com:
+Para **demo na internet**, use o **Blueprint** do Render descrito na seção [Visualizar o site de qualquer máquina](#visualizar-o-site-de-qualquer-máquina-demo-na-internet) (`render.yaml` + `wsgi.py` + Gunicorn).
 
-- `SECRET_KEY` forte e segredo de sessão;
-- banco persistente (PostgreSQL, por exemplo) via `DATABASE_URL`;
+Em ambiente **sério** (vendas reais), considere também:
+
+- `SECRET_KEY` forte (no Render pode sobrescrever a variável gerada);
+- banco persistente (**PostgreSQL** via `DATABASE_URL` — no plano gratuito o SQLite no disco efêmero pode ser apagado em reinícios);
 - HTTPS e política de cookies/sessão adequada.
 
 A emissão de **NFC-e/NF-e** real não faz parte deste projeto; use seu ERP ou serviço fiscal homologado.

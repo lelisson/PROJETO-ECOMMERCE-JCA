@@ -1,0 +1,15 @@
+# Blueprint Render: https://dashboard.render.com/select-repo?type=blueprint
+# Após o deploy, o site fica em https://<nome-do-serviço>.onrender.com
+services:
+  - type: web
+    name: projeto-ecommerce-jca
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: SECRET_KEY
+        generateValue: true
